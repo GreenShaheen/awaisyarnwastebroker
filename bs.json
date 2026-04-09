@@ -1,0 +1,173 @@
+[
+  {
+    "customer_id": 90005,
+    "Customer (City)": "Adnan Shakir ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 120001,
+    "Customer (City)": "Aslam ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 1,
+    "Customer (City)": "Muhammad Ali ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 2,
+    "Customer (City)": "Rana Awais ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 90003,
+    "Customer (City)": "ahmad ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 90004,
+    "Customer (City)": "ali  ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 90001,
+    "Customer (City)": "aqeel ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 180001,
+    "Customer (City)": "burhan (SGD)",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 60005,
+    "Customer (City)": "haji khalil (LHR)",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 60003,
+    "Customer (City)": "hamid ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 300001,
+    "Customer (City)": "hasan  ()",
+    "Total To Pay": 24000.0,
+    "Total To Receive": 240000.0,
+    "Payments Made": 0.0,
+    "Payments Received": 200000.0,
+    "Balance": 16000.0
+  },
+  {
+    "customer_id": 60001,
+    "Customer (City)": "khubaib (FSD)",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 60004,
+    "Customer (City)": "moaz ahmad ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 210001,
+    "Customer (City)": "qari farooq ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 270001,
+    "Customer (City)": "shahid parvez ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 90002,
+    "Customer (City)": "sheikh ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 150001,
+    "Customer (City)": "soubhan ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 240001,
+    "Customer (City)": "tayyab altaf ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  },
+  {
+    "customer_id": 60002,
+    "Customer (City)": "usman ()",
+    "Total To Pay": 0.0,
+    "Total To Receive": 0.0,
+    "Payments Made": 0.0,
+    "Payments Received": 0.0,
+    "Balance": 0.0
+  }
+]
