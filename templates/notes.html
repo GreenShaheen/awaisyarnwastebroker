@@ -2,56 +2,137 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Notes - Awais Yarn Waste Broker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .nav-tab { transition: all 0.2s; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .nav-tab {
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
         .nav-tab.active {
             background-color: white;
             color: #1e40af;
             box-shadow: 0 2px 0 #1e40af;
-            font-weight: 600;
+            font-weight: 700;
+        }
+
+        .tab-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sidebar {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .mobile-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mobile-card:active {
+            transform: scale(0.995);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 88vw;
+                max-width: 340px;
+                top: 0;
+                height: 100vh;
+            }
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
 
-<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="h-16 flex items-center justify-between">
-            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
-                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10" alt="Logo">
-                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+<!-- Top Navbar -->
+<nav class="bg-blue-600 text-white shadow-lg fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div class="h-16 md:h-20 flex items-center justify-between gap-3">
+            <a href="/dashboard" class="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition min-w-0">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0" alt="Logo">
+                <h1 class="text-base sm:text-lg md:text-2xl font-semibold truncate">
+                    Awais Yarn Waste Broker
+                </h1>
             </a>
-            <div class="flex items-center gap-4">
+
+            <div class="hidden md:flex items-center gap-4">
                 <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
-                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100 transition">
+                    Logout
+                </a>
             </div>
+
+            <button
+                onclick="toggleSidebar()"
+                class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 hover:bg-blue-400 transition"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
         </div>
     </div>
-    <div class="bg-blue-700 border-b">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-center">
-                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1 flex-wrap justify-center">
-                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
-                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
-                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
-                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
-                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
-                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
-                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+
+    <!-- Tab Bar -->
+    <div class="bg-blue-700 border-b border-blue-800">
+        <div class="max-w-7xl mx-auto px-0 sm:px-4 lg:px-6">
+            <div class="flex justify-start md:justify-center overflow-x-auto tab-scroll">
+                <div class="inline-flex bg-blue-700 rounded-none md:rounded-3xl p-1 md:p-1.5 mx-0 md:mx-auto gap-1 min-w-max w-full md:w-auto px-2 md:px-0">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab active flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Settings</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 
-<main class="pt-32 min-h-screen">
-    <div class="max-w-4xl mx-auto px-6 py-10">
-        <h1 class="text-4xl font-bold text-blue-600 mb-8">Notes</h1>
+<!-- Mobile Sidebar -->
+<div id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-[88vw] max-w-[340px] bg-white shadow-2xl -translate-x-full z-[60] transition-transform duration-300 md:hidden">
+    <div class="p-5 pt-20">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">Quick Menu</h2>
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-2xl bg-gray-100 hover:bg-gray-200 transition">✕</button>
+        </div>
+
+        <div class="space-y-2">
+            <a href="/dashboard" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Dashboard</a>
+            <a href="/addparticular" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Add Particular</a>
+            <a href="/rm" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Records</a>
+            <a href="/pm" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Payments</a>
+            <a href="/bs" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Balance Sheet</a>
+            <a href="/pb" class="block px-4 py-3 rounded-2xl bg-blue-50 font-semibold">Notes</a>
+            <a href="/settings" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Settings</a>
+            <a href="/logout" class="block px-4 py-3 rounded-2xl bg-blue-600 text-white text-center mt-3">Logout</a>
+        </div>
+    </div>
+</div>
+
+<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-50 md:hidden"></div>
+
+<main class="pt-[7.5rem] md:pt-32 min-h-screen">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 mb-6 sm:mb-8">Notes</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -63,22 +144,69 @@
           {% endif %}
         {% endwith %}
 
-        <div class="bg-white rounded-3xl shadow-xl p-6">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 mobile-card">
             <form method="POST" action="/pb">
-                <div class="mb-6">
-                    <label for="notes_content" class="block text-gray-700 font-medium mb-2">Your Notes (plain text)</label>
-                    <textarea name="notes_content" id="notes_content" rows="15"
-                              class="w-full px-5 py-4 border-2 border-gray-200 rounded-3xl focus:outline-none focus:border-blue-500 text-lg font-mono"
-                              placeholder="Write your notes here...&#10;Each save will replace the entire previous content.">{{ notes }}</textarea>
+                <div class="mb-5 sm:mb-6">
+                    <label for="notes_content" class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">
+                        Your Notes (plain text)
+                    </label>
+                    <textarea
+                        name="notes_content"
+                        id="notes_content"
+                        rows="15"
+                        class="w-full px-4 sm:px-5 py-4 border-2 border-gray-200 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg font-mono leading-6 resize-y min-h-[320px] sm:min-h-[420px]"
+                        placeholder="Write your notes here...&#10;Each save will replace the entire previous content.">{{ notes }}</textarea>
                 </div>
+
                 <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 sm:py-4 text-base sm:text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
                     Save Notes
                 </button>
             </form>
-            <p class="text-xs text-gray-400 mt-4 text-center">⚠️ Warning: Saving will permanently delete any previous notes.</p>
+
+            <p class="text-xs sm:text-sm text-gray-400 mt-4 text-center leading-relaxed">
+                ⚠️ Warning: Saving will permanently delete any previous notes.
+            </p>
         </div>
     </div>
 </main>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                toggleSidebar();
+            }
+        }
+    });
+
+    window.addEventListener('resize', function () {
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    });
+</script>
+
 </body>
 </html>

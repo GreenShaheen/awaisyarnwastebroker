@@ -2,25 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Manage Records - Awais Yarn Waste Broker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-        .nav-tab { transition: all 0.2s; }
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .nav-tab {
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
         .nav-tab.active {
             background-color: white;
             color: #1e40af;
             box-shadow: 0 2px 0 #1e40af;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        .table-row { transition: all 0.2s; }
-        .table-row:hover { background: #eff6ff; }
+        .table-row {
+            transition: all 0.2s ease;
+        }
 
-        .clear-btn { transition: all 0.2s; }
+        .table-row:hover {
+            background: #eff6ff;
+        }
+
+        .clear-btn {
+            transition: all 0.2s ease;
+        }
 
         .suggestions {
             max-height: 280px;
@@ -32,6 +47,7 @@
         #table-scroll-body-receive {
             max-height: 520px;
             overflow-y: auto;
+            overflow-x: auto;
         }
 
         #table-scroll-body-pay table thead tr th,
@@ -64,43 +80,120 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
         }
+
+        .sidebar {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .tab-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mobile-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mobile-card:active {
+            transform: scale(0.995);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 88vw;
+                max-width: 340px;
+                top: 0;
+                height: 100vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .mobile-stack {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .mobile-stack > * {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100">
 
-<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="h-16 flex items-center justify-between">
-            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
-                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10" alt="Logo">
-                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
-            </a>
-            <div class="flex items-center gap-4">
-                <span id="temp-status" class="bg-blue-500 px-3 py-1 rounded-2xl text-xs hidden">⏳ Loading cache...</span>
-                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
-                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
-            </div>
+<!-- Mobile Sidebar -->
+<div id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-[88vw] max-w-[340px] bg-white shadow-2xl -translate-x-full z-[60] md:hidden">
+    <div class="p-5 pt-20">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">Quick Menu</h2>
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-2xl bg-gray-100 hover:bg-gray-200 transition">✕</button>
+        </div>
+
+        <div class="space-y-2">
+            <a href="/dashboard" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Dashboard</a>
+            <a href="/addparticular" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Add Particular</a>
+            <a href="/rm" class="block px-4 py-3 rounded-2xl bg-blue-50 font-semibold">Records</a>
+            <a href="/pm" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Payments</a>
+            <a href="/bs" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Balance Sheet</a>
+            <a href="/pb" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Notes</a>
+            <a href="/settings" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Settings</a>
+            <a href="/logout" class="block px-4 py-3 rounded-2xl bg-blue-600 text-white text-center mt-3">Logout</a>
         </div>
     </div>
+</div>
+
+<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-50 md:hidden"></div>
+
+<nav class="bg-blue-600 text-white shadow-lg fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div class="h-16 md:h-20 flex items-center justify-between gap-3">
+            <a href="/dashboard" class="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition min-w-0">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0" alt="Logo">
+                <h1 class="text-base sm:text-lg md:text-2xl font-semibold truncate">
+                    Awais Yarn Waste Broker
+                </h1>
+            </a>
+
+            <div class="hidden md:flex items-center gap-4">
+                <span id="temp-status" class="bg-blue-500 px-3 py-1 rounded-2xl text-xs hidden">⏳ Loading cache...</span>
+                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100 transition">Logout</a>
+            </div>
+
+            <button
+                onclick="toggleSidebar()"
+                class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 hover:bg-blue-400 transition"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+        </div>
+    </div>
+
     <div class="bg-blue-700 border-b">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-center">
-                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1 flex-wrap justify-center">
-                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
-                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
-                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
-                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
-                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
-                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
-                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+        <div class="max-w-7xl mx-auto px-0 sm:px-4 lg:px-6">
+            <div class="flex justify-start md:justify-center overflow-x-auto tab-scroll">
+                <div class="inline-flex bg-blue-700 rounded-none md:rounded-3xl p-1 md:p-1.5 mx-0 md:mx-auto gap-1 min-w-max w-full md:w-auto px-2 md:px-0">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab active flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Settings</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 
-<main class="pt-32 min-h-screen">
-    <div class="max-w-7xl mx-auto px-6 py-10">
+<main class="pt-[7.5rem] md:pt-32 min-h-screen">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -112,28 +205,26 @@
           {% endif %}
         {% endwith %}
 
-        <h1 class="text-4xl font-bold text-blue-600 mb-8">Manage Records</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 mb-6 sm:mb-8">Manage Records</h1>
 
-        <!-- ========== ENTRY FORM ========== -->
-        <div class="form-patti rounded-3xl shadow-xl p-6 mb-10">
-            <h2 class="text-2xl font-semibold mb-6 text-blue-600 flex items-center gap-2">
-                <span class="text-3xl"></span> Add / Edit Record
+        <!-- Entry Form -->
+        <div class="form-patti rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 mb-10">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-blue-600 flex items-center gap-2">
+                Add / Edit Record
             </h2>
 
             <form action="/rm" method="POST" id="record-form">
-
                 <input type="hidden" name="id" id="edit_id">
                 <input type="hidden" name="customer_id" id="customer_id">
 
-                <!-- LINE 1 -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <div class="lg:col-span-5">
                         <label class="block text-gray-700 font-medium mb-2">
                             Particular / Customer <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="text" id="customer_name" autocomplete="off"
-                                   class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                                   class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                    placeholder="Type customer name..." required>
                             <div id="customer-suggestions"
                                  class="suggestions absolute bg-white border border-gray-200 rounded-3xl mt-2 w-full hidden z-50 text-sm"></div>
@@ -144,7 +235,7 @@
                     <div class="lg:col-span-3">
                         <label class="block text-gray-700 font-medium mb-2">Type <span class="text-red-500">*</span></label>
                         <select id="type" name="type" required
-                                class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                                class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                             <option value="">Select...</option>
                             <option value="to receive">To Receive</option>
                             <option value="to pay">To Pay</option>
@@ -154,23 +245,22 @@
                     <div class="lg:col-span-4">
                         <label class="block text-gray-700 font-medium mb-2">Detail</label>
                         <input type="text" id="detail" name="detail"
-                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                placeholder="e.g. yarn type, quality...">
                     </div>
                 </div>
 
-                <!-- LINE 2 -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     <div class="lg:col-span-2">
                         <label class="block text-gray-700 font-medium mb-2">Weight (kg)</label>
                         <input type="number" id="weight" name="weight" step="0.0001" min="0"
-                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                placeholder="0.00" oninput="autoCalcAmount()">
                     </div>
                     <div class="lg:col-span-2">
                         <label class="block text-gray-700 font-medium mb-2">Rate (Rs./kg)</label>
                         <input type="number" id="rate" name="rate" step="0.0001" min="0"
-                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                placeholder="0.00" oninput="autoCalcAmount()">
                     </div>
                     <div class="lg:col-span-3">
@@ -179,44 +269,41 @@
                             <span class="text-xs text-blue-500 font-normal ml-1">auto-calculated</span>
                         </label>
                         <input type="number" id="total_amount" name="total_amount" step="0.01" min="0" required
-                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg bg-blue-50"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg bg-blue-50"
                                placeholder="0.00">
                     </div>
                     <div class="lg:col-span-2">
                         <label class="block text-gray-700 font-medium mb-2">Date</label>
                         <input type="date" id="date" name="date"
-                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                     </div>
                     <div class="lg:col-span-3">
                         <label class="block text-gray-700 font-medium mb-2">Reference / Notes</label>
                         <input type="text" id="reference" name="reference"
-                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                placeholder="Optional reference...">
                     </div>
                 </div>
 
-                <div class="flex gap-4 pt-2">
+                <div class="flex gap-4 pt-2 mobile-stack">
                     <button type="submit" id="submit-btn"
-                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
+                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
                         Save Record
                     </button>
                     <button type="button" onclick="resetForm()"
-                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-3xl transition">
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
                         Cancel / New
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- ========== SIDE-BY-SIDE TREEVIEWS ========== -->
+        <!-- Side-by-side lists -->
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-            <!-- ==================== TO PAY TREEVIEW ==================== -->
-            <div class="bg-white rounded-3xl shadow-xl p-6 border-l-4 border-red-500">
-                
-                <div class="tree-filter-bar rounded-3xl p-5 mb-6">
-                    
-                    <!-- Search input – searches Customer, Detail, Reference -->
+            <!-- TO PAY -->
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-l-4 border-red-500">
+                <div class="tree-filter-bar rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-6">
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Search To Pay</label>
                         <div class="relative">
@@ -230,7 +317,6 @@
                         </div>
                     </div>
 
-                    <!-- From Date + To Date -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
@@ -244,8 +330,7 @@
                         </div>
                     </div>
 
-                    <!-- Apply & Reset -->
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 mobile-stack">
                         <button onclick="applyDateFilterPay()"
                                 class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-2xl font-medium">
                             Apply Filters
@@ -265,14 +350,14 @@
                     </button>
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-6">
                     <div class="flex items-center justify-between py-3">
                         <div class="text-gray-700 font-medium">Total Amount (To Pay)</div>
-                        <div id="to-pay-total-amount" class="text-2xl font-bold text-red-600">Rs. 0.00</div>
+                        <div id="to-pay-total-amount" class="text-xl sm:text-2xl font-bold text-red-600">Rs. 0.00</div>
                     </div>
                 </div>
 
-                <div id="table-scroll-body-pay" class="border border-gray-100 rounded-2xl overflow-auto">
+                <div class="hidden md:block" id="table-scroll-body-pay">
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
@@ -292,15 +377,14 @@
                     </table>
                 </div>
 
+                <div id="cards-tbody-pay" class="md:hidden space-y-4"></div>
+
                 <div id="pagination-pay" class="mt-6 flex flex-col items-center gap-4"></div>
             </div>
 
-            <!-- ==================== TO RECEIVE TREEVIEW ==================== -->
-            <div class="bg-white rounded-3xl shadow-xl p-6 border-l-4 border-emerald-500">
-                
-                <div class="tree-filter-bar rounded-3xl p-5 mb-6">
-                    
-                    <!-- Search input – searches Customer, Detail, Reference -->
+            <!-- TO RECEIVE -->
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-l-4 border-emerald-500">
+                <div class="tree-filter-bar rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-6">
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Search To Receive</label>
                         <div class="relative">
@@ -314,7 +398,6 @@
                         </div>
                     </div>
 
-                    <!-- From Date + To Date -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
@@ -328,8 +411,7 @@
                         </div>
                     </div>
 
-                    <!-- Apply & Reset -->
-                    <div class="flex gap-3">
+                    <div class="flex gap-3 mobile-stack">
                         <button onclick="applyDateFilterReceive()"
                                 class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-medium">
                             Apply Filters
@@ -349,14 +431,14 @@
                     </button>
                 </div>
 
-                <div class="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mb-6">
                     <div class="flex items-center justify-between py-3">
                         <div class="text-gray-700 font-medium">Total Amount (To Receive)</div>
-                        <div id="to-receive-total-amount" class="text-2xl font-bold text-emerald-600">Rs. 0.00</div>
+                        <div id="to-receive-total-amount" class="text-xl sm:text-2xl font-bold text-emerald-600">Rs. 0.00</div>
                     </div>
                 </div>
 
-                <div id="table-scroll-body-receive" class="border border-gray-100 rounded-2xl overflow-auto">
+                <div class="hidden md:block" id="table-scroll-body-receive">
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
@@ -376,9 +458,10 @@
                     </table>
                 </div>
 
+                <div id="cards-tbody-receive" class="md:hidden space-y-4"></div>
+
                 <div id="pagination-receive" class="mt-6 flex flex-col items-center gap-4"></div>
             </div>
-
         </div>
     </div>
 </main>
@@ -445,6 +528,31 @@
         }).slice(0, 12);
     }
 
+    // ==================== SIDEBAR ====================
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
     // ==================== PER-TYPE FILTER STATE ====================
     let currentSearchPay = '';
     let currentFromDatePay = '';
@@ -490,6 +598,10 @@
         const tzOffset = dateObj.getTimezoneOffset() * 60000;
         const localDate = new Date(dateObj.getTime() - tzOffset);
         return localDate.toISOString().split('T')[0];
+    }
+
+    function rowNumber(page, idx) {
+        return (page - 1) * PER_PAGE + idx + 1;
     }
 
     // ==================== AUTO CALC ====================
@@ -549,7 +661,10 @@
     async function loadToPay(page = 1) {
         toPayPage = page;
         const tbody = document.getElementById('records-tbody-pay');
+        const cards = document.getElementById('cards-tbody-pay');
+
         tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-500">Loading To Pay......</td></tr>`;
+        cards.innerHTML = `<div class="text-center py-10 text-red-500">Loading To Pay...</div>`;
 
         try {
             const params = new URLSearchParams({
@@ -568,11 +683,13 @@
             toPayTotalPages = data.total_pages || 1;
 
             renderTableToPay(data.records || []);
+            renderCardsToPay(data.records || []);
             renderPaginationToPay();
             updateToPaySummary(data);
             updateToPayHeading();
         } catch (err) {
             tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-400">Failed to load To Pay records</td></tr>`;
+            cards.innerHTML = `<div class="text-center py-10 text-red-400">Failed to load To Pay records</div>`;
         }
     }
 
@@ -584,25 +701,70 @@
             return;
         }
         records.forEach((r, idx) => {
-            const row = document.createElement('tr');
-            row.className = 'table-row';
-            const serialNo = (toPayPage - 1) * PER_PAGE + idx + 1;
-            row.innerHTML = `
+            const serialNo = rowNumber(toPayPage, idx);
+            const tr = document.createElement('tr');
+            tr.className = 'table-row';
+
+            tr.innerHTML = `
                 <td class="px-4 py-4 text-gray-400 text-xs">${serialNo}</td>
                 <td class="px-4 py-4 font-medium">${r.customer_name || '-'}</td>
                 <td class="px-4 py-4 max-w-[120px] truncate">${r.detail || '-'}</td>
-                <td class="px-4 py-4">${r.weight !== null ? formatNum(r.weight) : '-'}</td>
-                <td class="px-4 py-4">${r.rate !== null ? formatNum(r.rate) : '-'}</td>
+                <td class="px-4 py-4">${r.weight !== null && r.weight !== undefined ? formatNum(r.weight) : '-'}</td>
+                <td class="px-4 py-4">${r.rate !== null && r.rate !== undefined ? formatNum(r.rate) : '-'}</td>
                 <td class="px-4 py-4 font-semibold text-red-600">${formatMoney(r.total_amount)}</td>
                 <td class="px-4 py-4 whitespace-nowrap">${r.record_date || '-'}</td>
                 <td class="px-4 py-4 max-w-[140px] truncate">${r.reference || '-'}</td>
                 <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-500">${r.created_at || '-'}</td>
                 <td class="px-4 py-4 text-center whitespace-nowrap">
-                    <button onclick="editRecord(${r.id}, ${r.customer_id}, '${esc(r.customer_name)}', '${esc(r.type)}', '${esc(r.detail||'')}', ${r.weight||''}, ${r.rate||''}, ${r.total_amount}, '${esc(r.reference||'')}', '${esc(r.record_date||'')}')" 
+                    <button onclick="editRecord(${r.id}, ${r.customer_id}, ${JSON.stringify(r.customer_name || '')}, ${JSON.stringify(r.type || '')}, ${JSON.stringify(r.detail || '')}, ${JSON.stringify(r.weight ?? '')}, ${JSON.stringify(r.rate ?? '')}, ${JSON.stringify(r.total_amount ?? '')}, ${JSON.stringify(r.reference || '')}, ${JSON.stringify(r.record_date || '')})"
                             class="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3">Edit</button>
                     <button onclick="deleteRecord(${r.id})" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
                 </td>`;
-            tbody.appendChild(row);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderCardsToPay(records) {
+        const cards = document.getElementById('cards-tbody-pay');
+        cards.innerHTML = '';
+
+        if (!records.length) {
+            cards.innerHTML = `<div class="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl">No To Pay records found</div>`;
+            return;
+        }
+
+        records.forEach((r, idx) => {
+            const serialNo = rowNumber(toPayPage, idx);
+            const card = document.createElement('div');
+            card.className = 'mobile-card bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm';
+
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="text-xs text-gray-400 font-medium">#${serialNo}</div>
+                        <h3 class="text-lg font-semibold text-gray-900 break-words">${r.customer_name || '-'}</h3>
+                        <div class="mt-2 text-sm text-gray-600 space-y-1">
+                            <div><span class="font-medium">Detail:</span> ${r.detail || '-'}</div>
+                            <div><span class="font-medium">Weight:</span> ${r.weight !== null && r.weight !== undefined ? formatNum(r.weight) : '-'}</div>
+                            <div><span class="font-medium">Rate:</span> ${r.rate !== null && r.rate !== undefined ? formatNum(r.rate) : '-'}</div>
+                            <div><span class="font-medium">Amount:</span> <span class="font-semibold text-red-600">${formatMoney(r.total_amount)}</span></div>
+                            <div><span class="font-medium">Date:</span> ${r.record_date || '-'}</div>
+                            <div><span class="font-medium">Reference:</span> ${r.reference || '-'}</div>
+                            <div><span class="font-medium">Created:</span> ${r.created_at || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <button onclick="editRecord(${r.id}, ${r.customer_id}, ${JSON.stringify(r.customer_name || '')}, ${JSON.stringify(r.type || '')}, ${JSON.stringify(r.detail || '')}, ${JSON.stringify(r.weight ?? '')}, ${JSON.stringify(r.rate ?? '')}, ${JSON.stringify(r.total_amount ?? '')}, ${JSON.stringify(r.reference || '')}, ${JSON.stringify(r.record_date || '')})"
+                            class="w-full py-3 rounded-2xl bg-blue-600 text-white font-semibold text-sm">
+                        Edit
+                    </button>
+                    <button onclick="deleteRecord(${r.id})"
+                            class="w-full py-3 rounded-2xl bg-red-600 text-white font-semibold text-sm">
+                        Delete
+                    </button>
+                </div>`;
+            cards.appendChild(card);
         });
     }
 
@@ -611,17 +773,24 @@
     }
 
     function updateToPayHeading() {
-        document.getElementById('to-pay-heading').innerHTML = `To Pay Records <span class="text-gray-500 font-normal text-xl">— ${toPayTotalRecords} records</span>`;
+        document.getElementById('to-pay-heading').innerHTML = `To Pay Records <span class="text-gray-500 font-normal text-base sm:text-xl">— ${toPayTotalRecords} records</span>`;
     }
 
     function renderPaginationToPay() {
         const container = document.getElementById('pagination-pay');
         if (toPayTotalPages <= 1) { container.innerHTML = ''; return; }
+
         container.innerHTML = `
-            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
-                <button onclick="goToPayPage(${toPayPage - 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toPayPage <= 1 ? 'disabled' : ''}>← Previous</button>
-                <div class="text-center font-semibold text-lg">Page <span class="text-red-600">${toPayPage}</span> of <span class="text-red-600">${toPayTotalPages}</span></div>
-                <button onclick="goToPayPage(${toPayPage + 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toPayPage >= toPayTotalPages ? 'disabled' : ''}>Next →</button>
+            <div class="flex flex-col sm:flex-row items-center justify-between w-full max-w-md text-sm text-gray-600 gap-3">
+                <button onclick="goToPayPage(${toPayPage - 1})"
+                        class="w-full sm:w-auto px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+                        ${toPayPage <= 1 ? 'disabled' : ''}>← Previous</button>
+                <div class="text-center font-semibold text-base sm:text-lg">
+                    Page <span class="text-red-600">${toPayPage}</span> of <span class="text-red-600">${toPayTotalPages}</span>
+                </div>
+                <button onclick="goToPayPage(${toPayPage + 1})"
+                        class="w-full sm:w-auto px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+                        ${toPayPage >= toPayTotalPages ? 'disabled' : ''}>Next →</button>
             </div>`;
     }
 
@@ -634,7 +803,10 @@
     async function loadToReceive(page = 1) {
         toReceivePage = page;
         const tbody = document.getElementById('records-tbody-receive');
+        const cards = document.getElementById('cards-tbody-receive');
+
         tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-emerald-500">Loading To Receive...</td></tr>`;
+        cards.innerHTML = `<div class="text-center py-10 text-emerald-500">Loading To Receive...</div>`;
 
         try {
             const params = new URLSearchParams({
@@ -653,11 +825,13 @@
             toReceiveTotalPages = data.total_pages || 1;
 
             renderTableToReceive(data.records || []);
+            renderCardsToReceive(data.records || []);
             renderPaginationToReceive();
             updateToReceiveSummary(data);
             updateToReceiveHeading();
         } catch (err) {
             tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-400">Failed to load To Receive records</td></tr>`;
+            cards.innerHTML = `<div class="text-center py-10 text-red-400">Failed to load To Receive records</div>`;
         }
     }
 
@@ -669,25 +843,70 @@
             return;
         }
         records.forEach((r, idx) => {
-            const row = document.createElement('tr');
-            row.className = 'table-row';
-            const serialNo = (toReceivePage - 1) * PER_PAGE + idx + 1;
-            row.innerHTML = `
+            const serialNo = rowNumber(toReceivePage, idx);
+            const tr = document.createElement('tr');
+            tr.className = 'table-row';
+
+            tr.innerHTML = `
                 <td class="px-4 py-4 text-gray-400 text-xs">${serialNo}</td>
                 <td class="px-4 py-4 font-medium">${r.customer_name || '-'}</td>
                 <td class="px-4 py-4 max-w-[120px] truncate">${r.detail || '-'}</td>
-                <td class="px-4 py-4">${r.weight !== null ? formatNum(r.weight) : '-'}</td>
-                <td class="px-4 py-4">${r.rate !== null ? formatNum(r.rate) : '-'}</td>
+                <td class="px-4 py-4">${r.weight !== null && r.weight !== undefined ? formatNum(r.weight) : '-'}</td>
+                <td class="px-4 py-4">${r.rate !== null && r.rate !== undefined ? formatNum(r.rate) : '-'}</td>
                 <td class="px-4 py-4 font-semibold text-emerald-600">${formatMoney(r.total_amount)}</td>
                 <td class="px-4 py-4 whitespace-nowrap">${r.record_date || '-'}</td>
                 <td class="px-4 py-4 max-w-[140px] truncate">${r.reference || '-'}</td>
                 <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-500">${r.created_at || '-'}</td>
                 <td class="px-4 py-4 text-center whitespace-nowrap">
-                    <button onclick="editRecord(${r.id}, ${r.customer_id}, '${esc(r.customer_name)}', '${esc(r.type)}', '${esc(r.detail||'')}', ${r.weight||''}, ${r.rate||''}, ${r.total_amount}, '${esc(r.reference||'')}', '${esc(r.record_date||'')}')" 
+                    <button onclick="editRecord(${r.id}, ${r.customer_id}, ${JSON.stringify(r.customer_name || '')}, ${JSON.stringify(r.type || '')}, ${JSON.stringify(r.detail || '')}, ${JSON.stringify(r.weight ?? '')}, ${JSON.stringify(r.rate ?? '')}, ${JSON.stringify(r.total_amount ?? '')}, ${JSON.stringify(r.reference || '')}, ${JSON.stringify(r.record_date || '')})"
                             class="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3">Edit</button>
                     <button onclick="deleteRecord(${r.id})" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
                 </td>`;
-            tbody.appendChild(row);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderCardsToReceive(records) {
+        const cards = document.getElementById('cards-tbody-receive');
+        cards.innerHTML = '';
+
+        if (!records.length) {
+            cards.innerHTML = `<div class="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl">No To Receive records found</div>`;
+            return;
+        }
+
+        records.forEach((r, idx) => {
+            const serialNo = rowNumber(toReceivePage, idx);
+            const card = document.createElement('div');
+            card.className = 'mobile-card bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm';
+
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="text-xs text-gray-400 font-medium">#${serialNo}</div>
+                        <h3 class="text-lg font-semibold text-gray-900 break-words">${r.customer_name || '-'}</h3>
+                        <div class="mt-2 text-sm text-gray-600 space-y-1">
+                            <div><span class="font-medium">Detail:</span> ${r.detail || '-'}</div>
+                            <div><span class="font-medium">Weight:</span> ${r.weight !== null && r.weight !== undefined ? formatNum(r.weight) : '-'}</div>
+                            <div><span class="font-medium">Rate:</span> ${r.rate !== null && r.rate !== undefined ? formatNum(r.rate) : '-'}</div>
+                            <div><span class="font-medium">Amount:</span> <span class="font-semibold text-emerald-600">${formatMoney(r.total_amount)}</span></div>
+                            <div><span class="font-medium">Date:</span> ${r.record_date || '-'}</div>
+                            <div><span class="font-medium">Reference:</span> ${r.reference || '-'}</div>
+                            <div><span class="font-medium">Created:</span> ${r.created_at || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <button onclick="editRecord(${r.id}, ${r.customer_id}, ${JSON.stringify(r.customer_name || '')}, ${JSON.stringify(r.type || '')}, ${JSON.stringify(r.detail || '')}, ${JSON.stringify(r.weight ?? '')}, ${JSON.stringify(r.rate ?? '')}, ${JSON.stringify(r.total_amount ?? '')}, ${JSON.stringify(r.reference || '')}, ${JSON.stringify(r.record_date || '')})"
+                            class="w-full py-3 rounded-2xl bg-blue-600 text-white font-semibold text-sm">
+                        Edit
+                    </button>
+                    <button onclick="deleteRecord(${r.id})"
+                            class="w-full py-3 rounded-2xl bg-red-600 text-white font-semibold text-sm">
+                        Delete
+                    </button>
+                </div>`;
+            cards.appendChild(card);
         });
     }
 
@@ -696,17 +915,24 @@
     }
 
     function updateToReceiveHeading() {
-        document.getElementById('to-receive-heading').innerHTML = `To Receive Records <span class="text-gray-500 font-normal text-xl">— ${toReceiveTotalRecords} records</span>`;
+        document.getElementById('to-receive-heading').innerHTML = `To Receive Records <span class="text-gray-500 font-normal text-base sm:text-xl">— ${toReceiveTotalRecords} records</span>`;
     }
 
     function renderPaginationToReceive() {
         const container = document.getElementById('pagination-receive');
         if (toReceiveTotalPages <= 1) { container.innerHTML = ''; return; }
+
         container.innerHTML = `
-            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
-                <button onclick="goToReceivePage(${toReceivePage - 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toReceivePage <= 1 ? 'disabled' : ''}>← Previous</button>
-                <div class="text-center font-semibold text-lg">Page <span class="text-emerald-600">${toReceivePage}</span> of <span class="text-emerald-600">${toReceiveTotalPages}</span></div>
-                <button onclick="goToReceivePage(${toReceivePage + 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toReceivePage >= toReceiveTotalPages ? 'disabled' : ''}>Next →</button>
+            <div class="flex flex-col sm:flex-row items-center justify-between w-full max-w-md text-sm text-gray-600 gap-3">
+                <button onclick="goToReceivePage(${toReceivePage - 1})"
+                        class="w-full sm:w-auto px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+                        ${toReceivePage <= 1 ? 'disabled' : ''}>← Previous</button>
+                <div class="text-center font-semibold text-base sm:text-lg">
+                    Page <span class="text-emerald-600">${toReceivePage}</span> of <span class="text-emerald-600">${toReceiveTotalPages}</span>
+                </div>
+                <button onclick="goToReceivePage(${toReceivePage + 1})"
+                        class="w-full sm:w-auto px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+                        ${toReceivePage >= toReceiveTotalPages ? 'disabled' : ''}>Next →</button>
             </div>`;
     }
 
@@ -801,7 +1027,9 @@
             suggestionsDiv.classList.remove('hidden');
         }
 
-        function searchLocal(val) { renderSuggestions(filterCustomers(val)); }
+        function searchLocal(val) {
+            renderSuggestions(filterCustomers(val));
+        }
 
         async function searchRemote(val) {
             try {
@@ -824,12 +1052,21 @@
             if (activeIndex >= 0 && items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
         }
 
-        input.addEventListener('focus', () => { const val = input.value.trim(); if (val.length >= 1) fetchSuggestions(val); });
+        input.addEventListener('focus', () => {
+            const val = input.value.trim();
+            if (val.length >= 1) fetchSuggestions(val);
+        });
+
         input.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             const val = input.value.trim();
             document.getElementById('customer_id').value = '';
-            if (val.length === 0) { suggestionsDiv.classList.add('hidden'); return; }
+
+            if (val.length === 0) {
+                suggestionsDiv.classList.add('hidden');
+                return;
+            }
+
             if (tempLoaded) fetchSuggestions(val);
             else debounceTimer = setTimeout(() => fetchSuggestions(val), 180);
         });
@@ -867,29 +1104,51 @@
         loadToPay(1);
         loadToReceive(1);
 
-        // Search To Pay
         const searchInputPay = document.getElementById('search-input-pay');
         const clearBtnPay = document.getElementById('clear-btn-pay');
         searchInputPay.addEventListener('input', () => {
             const value = searchInputPay.value.trim();
             clearBtnPay.classList.toggle('hidden', value.length === 0);
             clearTimeout(window.searchDebouncePay);
-            if (value.length === 0) { currentSearchPay = ''; loadToPay(1); return; }
-            window.searchDebouncePay = setTimeout(() => { currentSearchPay = value; loadToPay(1); }, 220);
+            if (value.length === 0) {
+                currentSearchPay = '';
+                loadToPay(1);
+                return;
+            }
+            window.searchDebouncePay = setTimeout(() => {
+                currentSearchPay = value;
+                loadToPay(1);
+            }, 220);
         });
 
-        // Search To Receive
         const searchInputReceive = document.getElementById('search-input-receive');
         const clearBtnReceive = document.getElementById('clear-btn-receive');
         searchInputReceive.addEventListener('input', () => {
             const value = searchInputReceive.value.trim();
             clearBtnReceive.classList.toggle('hidden', value.length === 0);
             clearTimeout(window.searchDebounceReceive);
-            if (value.length === 0) { currentSearchReceive = ''; loadToReceive(1); return; }
-            window.searchDebounceReceive = setTimeout(() => { currentSearchReceive = value; loadToReceive(1); }, 220);
+            if (value.length === 0) {
+                currentSearchReceive = '';
+                loadToReceive(1);
+                return;
+            }
+            window.searchDebounceReceive = setTimeout(() => {
+                currentSearchReceive = value;
+                loadToReceive(1);
+            }, 220);
         });
 
         initCustomerAutocomplete();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeSidebar();
+    });
+
+    window.addEventListener('resize', function () {
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+            closeSidebar();
+        }
     });
 </script>
 </body>

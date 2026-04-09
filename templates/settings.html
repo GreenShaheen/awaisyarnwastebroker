@@ -2,42 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Settings - Awais Yarn Waste Broker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .nav-tab { transition: all 0.2s; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .nav-tab {
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
         .nav-tab.active {
             background-color: white;
             color: #1e40af;
             box-shadow: 0 2px 0 #1e40af;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        /* ── Modal Overlay ── */
+        /* Modal Overlay */
         #credModal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.55);
+            background: rgba(0, 0, 0, 0.55);
             z-index: 9999;
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(4px);
+            padding: 12px;
         }
-        #credModal.open { display: flex; }
 
-        /* Shake animation for errors */
-        @keyframes shake {
-            0%,100% { transform: translateX(0); }
-            20%      { transform: translateX(-8px); }
-            40%      { transform: translateX(8px); }
-            60%      { transform: translateX(-5px); }
-            80%      { transform: translateX(5px); }
+        #credModal.open {
+            display: flex;
         }
-        .shake { animation: shake 0.4s ease; }
+
+        /* Shake animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease;
+        }
 
         /* Password strength bar */
         #strengthBar {
@@ -47,7 +64,10 @@
         }
 
         /* Eye icon toggle */
-        .input-wrap { position: relative; }
+        .input-wrap {
+            position: relative;
+        }
+
         .eye-btn {
             position: absolute;
             right: 14px;
@@ -60,109 +80,171 @@
             padding: 0;
             line-height: 1;
         }
-        .eye-btn:hover { color: #3b82f6; }
+
+        .eye-btn:hover {
+            color: #3b82f6;
+        }
 
         /* Spinner */
         .spinner {
             display: inline-block;
-            width: 18px; height: 18px;
-            border: 2px solid rgba(255,255,255,0.4);
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
             border-top-color: white;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
         /* Toast */
         #toast {
             position: fixed;
-            bottom: 28px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(80px);
             opacity: 0;
-            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            transition: all 0.35s cubic-bezier(.4, 0, .2, 1);
             z-index: 99999;
             pointer-events: none;
+            max-width: min(92vw, 520px);
         }
+
         #toast.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        .sidebar {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .tab-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 88vw;
+                max-width: 340px;
+                top: 0;
+                height: 100vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .mobile-stack {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .mobile-stack > * {
+                width: 100%;
+            }
+        }
     </style>
 </head>
+
 <body class="bg-gray-100">
 
-<!-- ════════ Top Navbar ════════ -->
-<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="h-16 flex items-center justify-between">
-            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
-                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10">
-                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+<!-- Mobile Sidebar -->
+<div id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-[88vw] max-w-[340px] bg-white shadow-2xl -translate-x-full z-[60] md:hidden">
+    <div class="p-5 pt-20">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">Quick Menu</h2>
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-2xl bg-gray-100 hover:bg-gray-200 transition">✕</button>
+        </div>
+
+        <div class="space-y-2">
+            <a href="/dashboard" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Dashboard</a>
+            <a href="/rm" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Records Management</a>
+            <a href="/pm" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Payments Management</a>
+            <a href="/bs" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Balance Sheet</a>
+            <a href="/pb" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Notes</a>
+            <a href="/settings" class="block px-4 py-3 rounded-2xl bg-blue-50 text-blue-700 font-medium">Settings</a>
+            <a href="/logout" class="block px-4 py-3 rounded-2xl bg-blue-600 text-white text-center mt-3">Logout</a>
+        </div>
+    </div>
+</div>
+
+<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/40 z-50 md:hidden"></div>
+
+<!-- Top Navbar -->
+<nav class="bg-blue-600 text-white shadow-lg fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div class="h-16 md:h-20 flex items-center justify-between gap-3">
+            <a href="/dashboard" class="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition min-w-0">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0" alt="Logo">
+                <h1 class="text-base sm:text-lg md:text-2xl font-semibold truncate">
+                    Awais Yarn Waste Broker
+                </h1>
             </a>
-            <div class="flex items-center gap-4">
+
+            <div class="hidden md:flex items-center gap-4">
                 <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
-                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100 transition">Logout</a>
             </div>
+
+            <button
+                onclick="toggleSidebar()"
+                class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 hover:bg-blue-400 transition"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
         </div>
     </div>
 
     <!-- Tab Bar -->
-    <div class="bg-blue-700 border-b">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-center">
-                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1">
-                    <a href="/dashboard"     class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
-                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
-                    <a href="/rm"            class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
-                    <a href="/pm"            class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
-                    <a href="/bs"            class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
-                    <a href="/pb"            class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
-                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+    <div class="bg-blue-700 border-b border-blue-800">
+        <div class="max-w-7xl mx-auto px-0 sm:px-4 lg:px-6">
+            <div class="flex justify-start md:justify-center overflow-x-auto tab-scroll">
+                <div class="inline-flex bg-blue-700 rounded-none md:rounded-3xl p-1 md:p-1.5 mx-0 md:mx-auto gap-1 min-w-max w-full md:w-auto px-2 md:px-0">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab active flex items-center gap-3 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Settings</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 
-<!-- ════════ Sidebar ════════ -->
-<div id="sidebar" class="fixed top-32 left-0 h-[calc(100vh-8rem)] w-72 bg-white shadow-2xl -translate-x-full z-40 transition-transform duration-300">
-    <div class="p-6">
-        <h2 class="text-xl font-semibold mb-8 border-b pb-4">Quick Menu</h2>
-        <ul class="space-y-2">
-            <li><a href="/dashboard"  class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Dashboard</a></li>
-            <li><a href="/rm"         class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Records Management</a></li>
-            <li><a href="/pm"         class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Payments Management</a></li>
-            <li><a href="/bs"         class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Balance Sheet</a></li>
-            <li><a href="/pb"         class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Notes</a></li>
-            <li><a href="/settings"   class="flex px-5 py-4 rounded-2xl bg-blue-50 text-blue-700 font-medium">Settings</a></li>
-        </ul>
-    </div>
-</div>
-<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/40 z-30"></div>
-
-<!-- ════════ Main Content ════════ -->
-<main class="pt-36 min-h-screen">
-    <div class="max-w-3xl mx-auto px-6 py-10 space-y-6">
+<!-- Main Content -->
+<main class="pt-[7.5rem] md:pt-36 min-h-screen">
+    <div class="max-w-3xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8 space-y-5 sm:space-y-6">
 
         <!-- Header -->
         <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-xl"></div>
+            <div class="w-10 h-10 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-xl">⚙️</div>
             <div>
-                <h1 class="text-2xl font-bold">Settings</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold">Settings</h1>
                 <p class="text-sm text-gray-500">Manage your account & database</p>
             </div>
         </div>
 
-        <!-- ── Card: Account Security ── -->
-        <div class="bg-white rounded-3xl shadow-lg p-8">
-            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+        <!-- Account Security -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8">
+            <div class="flex items-center gap-3 mb-5 sm:mb-6 pb-4 border-b border-gray-100">
                 <span class="text-2xl">🔐</span>
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800">Account Security</h2>
                     <p class="text-sm text-gray-400">Update your login username or password</p>
                 </div>
             </div>
+
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <p class="text-gray-700 font-medium">Login Credentials</p>
@@ -170,34 +252,35 @@
                 </div>
                 <button
                     onclick="openModal()"
-                    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-7 py-3 rounded-2xl font-semibold transition-all shadow-sm whitespace-nowrap">
+                    class="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-7 py-3 rounded-2xl font-semibold transition-all shadow-sm whitespace-nowrap">
                     Change Password
                 </button>
             </div>
         </div>
 
-        <!-- ── Card: Database Backup ── -->
-        <div class="bg-white rounded-3xl shadow-lg p-8">
-            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+        <!-- Database Backup -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-4 sm:p-6 md:p-8">
+            <div class="flex items-center gap-3 mb-5 sm:mb-6 pb-4 border-b border-gray-100">
                 <span class="text-2xl">🗄️</span>
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800">Database Backup</h2>
                     <p class="text-sm text-gray-400">Download a full SQL dump of your database</p>
                 </div>
             </div>
+
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <p class="text-gray-700 font-medium">Download Full Backup</p>
-                    
                 </div>
-                <a  id="backupBtn"
-                    href="/download_backup"
-                    onclick="handleBackupClick()"
-                    class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-7 py-3 rounded-2xl font-semibold transition-all shadow-sm whitespace-nowrap">
+                <a id="backupBtn"
+                   href="/download_backup"
+                   onclick="handleBackupClick()"
+                   class="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-7 py-3 rounded-2xl font-semibold transition-all shadow-sm whitespace-nowrap">
                     <span id="backupIcon"></span>
                     <span id="backupText">Download Backup</span>
                 </a>
             </div>
+
             <div class="mt-4 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 text-sm text-amber-700 flex items-start gap-2">
                 <span class="mt-0.5">⚠️</span>
                 <span>Keep your backup file in a safe place. It contains all your business records.</span>
@@ -207,32 +290,23 @@
     </div>
 </main>
 
-
-<!-- ════════════════════════════════════════
-     CHANGE CREDENTIALS MODAL
-════════════════════════════════════════ -->
+<!-- Change Credentials Modal -->
 <div id="credModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+    <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg mx-2 sm:mx-4 overflow-hidden max-h-[92vh] flex flex-col">
 
-        <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-8 py-6 flex items-center justify-between">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-5 sm:px-8 py-5 sm:py-6 flex items-center justify-between">
             <div>
-                <h2 id="modalTitle" class="text-xl font-bold text-white">Change Credentials</h2>
-                <p class="text-blue-100 text-sm mt-0.5">Update your login username &amp; password</p>
+                <h2 id="modalTitle" class="text-lg sm:text-xl font-bold text-white">Change Credentials</h2>
+                <p class="text-blue-100 text-xs sm:text-sm mt-0.5">Update your login username &amp; password</p>
             </div>
             <button onclick="closeModal()" class="text-white/70 hover:text-white text-2xl leading-none transition">&times;</button>
         </div>
 
-        <!-- Modal Body -->
-        <div class="px-8 py-7 space-y-5">
-
-            <!-- Alert box (hidden by default) -->
+        <div class="px-5 sm:px-8 py-6 sm:py-7 space-y-5 overflow-y-auto">
             <div id="modalAlert" class="hidden rounded-2xl px-4 py-3 text-sm font-medium flex items-start gap-2"></div>
 
-            <!-- Section label -->
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Current Credentials (required)</p>
 
-            <!-- Current Username -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Current Username</label>
                 <div class="input-wrap">
@@ -241,7 +315,6 @@
                 </div>
             </div>
 
-            <!-- Current Password -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
                 <div class="input-wrap">
@@ -254,14 +327,12 @@
             <div class="border-t border-dashed border-gray-200 pt-2">
                 <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">New Credentials (fill what you want to change)</p>
 
-                <!-- New Username -->
                 <div class="mb-5">
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">New Username <span class="text-gray-400 font-normal">(optional)</span></label>
                     <input id="new_username" type="text" placeholder="Leave blank to keep current"
                         class="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition text-gray-800">
                 </div>
 
-                <!-- New Password -->
                 <div class="mb-3">
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">New Password <span class="text-gray-400 font-normal">(optional)</span></label>
                     <div class="input-wrap">
@@ -270,14 +341,12 @@
                             class="w-full px-4 py-3 pr-12 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition text-gray-800">
                         <button type="button" class="eye-btn" onclick="toggleEye('new_password', this)">👁</button>
                     </div>
-                    <!-- Strength bar -->
                     <div class="mt-2 bg-gray-100 rounded-full overflow-hidden h-1">
                         <div id="strengthBar" style="width:0%"></div>
                     </div>
                     <p id="strengthLabel" class="text-xs text-gray-400 mt-1"></p>
                 </div>
 
-                <!-- Confirm Password -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
                     <div class="input-wrap">
@@ -289,22 +358,20 @@
             </div>
         </div>
 
-        <!-- Modal Footer -->
-        <div class="px-8 pb-7 flex gap-3 justify-end">
+        <div class="px-5 sm:px-8 pb-6 sm:pb-7 flex flex-col-reverse sm:flex-row gap-3 justify-end">
             <button onclick="closeModal()"
-                class="px-7 py-3 rounded-2xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition">
+                class="px-7 py-3 rounded-2xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition w-full sm:w-auto">
                 Cancel
             </button>
             <button id="saveBtn" onclick="submitCredentials()"
-                class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl transition flex items-center gap-2">
+                class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl transition flex items-center justify-center gap-2 w-full sm:w-auto">
                 <span id="saveBtnText">Save Changes</span>
             </button>
         </div>
-
     </div>
 </div>
 
-<!-- Toast Notification -->
+<!-- Toast -->
 <div id="toast">
     <div id="toastInner" class="flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl text-white font-medium text-sm">
         <span id="toastIcon"></span>
@@ -312,195 +379,212 @@
     </div>
 </div>
 
-
-<!-- ════════ Scripts ════════ -->
 <script>
-// ── Sidebar ──
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('-translate-x-full');
-    document.getElementById('overlay').classList.toggle('hidden');
-}
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
 
-// ── Modal open / close ──
-function openModal() {
-    clearModal();
-    document.getElementById('credModal').classList.add('open');
-    document.getElementById('cur_username').focus();
-}
-
-function closeModal() {
-    document.getElementById('credModal').classList.remove('open');
-}
-
-// Close on backdrop click
-document.getElementById('credModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
-
-// Close on Escape
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal();
-});
-
-function clearModal() {
-    ['cur_username','cur_password','new_username','new_password','confirm_password']
-        .forEach(id => document.getElementById(id).value = '');
-    hideAlert();
-    updateStrength('');
-}
-
-// ── Show / hide password ──
-function toggleEye(inputId, btn) {
-    const inp = document.getElementById(inputId);
-    if (inp.type === 'password') {
-        inp.type = 'text';
-        btn.textContent = '🙈';
-    } else {
-        inp.type = 'password';
-        btn.textContent = '👁';
-    }
-}
-
-// ── Password strength ──
-function updateStrength(val) {
-    const bar   = document.getElementById('strengthBar');
-    const label = document.getElementById('strengthLabel');
-    if (!val) { bar.style.width='0%'; label.textContent=''; return; }
-    let score = 0;
-    if (val.length >= 6)  score++;
-    if (val.length >= 10) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
-
-    const levels = [
-        { pct:'20%', color:'#ef4444', text:'Very Weak' },
-        { pct:'40%', color:'#f97316', text:'Weak' },
-        { pct:'60%', color:'#eab308', text:'Fair' },
-        { pct:'80%', color:'#22c55e', text:'Strong' },
-        { pct:'100%',color:'#16a34a', text:'Very Strong' },
-    ];
-    const lv = levels[Math.min(score, 4)];
-    bar.style.width = lv.pct;
-    bar.style.backgroundColor = lv.color;
-    label.textContent = lv.text;
-    label.style.color = lv.color;
-}
-
-// ── Alert inside modal ──
-function showAlert(msg, type) {
-    const el = document.getElementById('modalAlert');
-    el.className = 'rounded-2xl px-4 py-3 text-sm font-medium flex items-start gap-2 ' +
-        (type === 'error'
-            ? 'bg-red-50 text-red-700 border border-red-200'
-            : 'bg-green-50 text-green-700 border border-green-200');
-    el.innerHTML = (type === 'error' ? '❌ ' : '✅ ') + msg;
-    el.classList.remove('hidden');
-
-    if (type === 'error') {
-        el.classList.add('shake');
-        setTimeout(() => el.classList.remove('shake'), 500);
-    }
-}
-function hideAlert() {
-    document.getElementById('modalAlert').classList.add('hidden');
-}
-
-// ── Submit credentials ──
-async function submitCredentials() {
-    hideAlert();
-
-    const cur_username    = document.getElementById('cur_username').value.trim();
-    const cur_password    = document.getElementById('cur_password').value.trim();
-    const new_username    = document.getElementById('new_username').value.trim();
-    const new_password    = document.getElementById('new_password').value.trim();
-    const confirm_password = document.getElementById('confirm_password').value.trim();
-
-    // Client-side validation
-    if (!cur_username || !cur_password) {
-        showAlert('Please enter your current username and password.', 'error');
-        return;
-    }
-    if (!new_username && !new_password) {
-        showAlert('Please enter a new username or a new password.', 'error');
-        return;
-    }
-    if (new_password && new_password !== confirm_password) {
-        showAlert('New passwords do not match.', 'error');
-        return;
-    }
-    if (new_password && new_password.length < 6) {
-        showAlert('New password must be at least 6 characters.', 'error');
-        return;
-    }
-
-    // Loading state
-    const btn  = document.getElementById('saveBtn');
-    const text = document.getElementById('saveBtnText');
-    btn.disabled = true;
-    text.innerHTML = '<span class="spinner"></span> Saving…';
-
-    try {
-        const res = await fetch('/change_credentials', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cur_username, cur_password, new_username, new_password, confirm_password })
-        });
-
-        // Map to what server expects
-        const body = JSON.stringify({
-            current_username:  cur_username,
-            current_password:  cur_password,
-            new_username:      new_username,
-            new_password:      new_password,
-            confirm_password:  confirm_password
-        });
-
-        const res2 = await fetch('/change_credentials', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: body
-        });
-
-        const data = await res2.json();
-
-        if (data.success) {
-            closeModal();
-            showToast('✅', data.message, 'success');
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
         } else {
-            showAlert(data.message, 'error');
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function openModal() {
+        clearModal();
+        document.getElementById('credModal').classList.add('open');
+        document.getElementById('cur_username').focus();
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('credModal').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('credModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeSidebar();
+        }
+    });
+
+    function clearModal() {
+        ['cur_username', 'cur_password', 'new_username', 'new_password', 'confirm_password']
+            .forEach(id => document.getElementById(id).value = '');
+        hideAlert();
+        updateStrength('');
+    }
+
+    function toggleEye(inputId, btn) {
+        const inp = document.getElementById(inputId);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            inp.type = 'password';
+            btn.textContent = '👁';
+        }
+    }
+
+    function updateStrength(val) {
+        const bar = document.getElementById('strengthBar');
+        const label = document.getElementById('strengthLabel');
+
+        if (!val) {
+            bar.style.width = '0%';
+            label.textContent = '';
+            return;
         }
 
-    } catch (err) {
-        showAlert('Network error. Please try again.', 'error');
-    } finally {
-        btn.disabled = false;
-        text.textContent = 'Save Changes';
+        let score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val)) score++;
+        if (/[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        const levels = [
+            { pct: '20%', color: '#ef4444', text: 'Very Weak' },
+            { pct: '40%', color: '#f97316', text: 'Weak' },
+            { pct: '60%', color: '#eab308', text: 'Fair' },
+            { pct: '80%', color: '#22c55e', text: 'Strong' },
+            { pct: '100%', color: '#16a34a', text: 'Very Strong' },
+        ];
+
+        const lv = levels[Math.min(score, 4)];
+        bar.style.width = lv.pct;
+        bar.style.backgroundColor = lv.color;
+        label.textContent = lv.text;
+        label.style.color = lv.color;
     }
-}
 
-// ── Toast ──
-function showToast(icon, msg, type) {
-    const toast = document.getElementById('toast');
-    const inner = document.getElementById('toastInner');
-    document.getElementById('toastIcon').textContent = icon;
-    document.getElementById('toastMsg').textContent  = msg;
-    inner.style.backgroundColor = type === 'success' ? '#16a34a' : '#dc2626';
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3500);
-}
+    function showAlert(msg, type) {
+        const el = document.getElementById('modalAlert');
+        el.className = 'rounded-2xl px-4 py-3 text-sm font-medium flex items-start gap-2 ' +
+            (type === 'error'
+                ? 'bg-red-50 text-red-700 border border-red-200'
+                : 'bg-green-50 text-green-700 border border-green-200');
+        el.innerHTML = (type === 'error' ? '❌ ' : '✅ ') + msg;
+        el.classList.remove('hidden');
 
-// ── Backup button feedback ──
-function handleBackupClick() {
-    const icon = document.getElementById('backupIcon');
-    const text = document.getElementById('backupText');
-    icon.textContent = '⏳';
-    text.textContent = 'Preparing…';
-    setTimeout(() => {
-        icon.textContent = '';
-        text.textContent = 'Download Backup';
-    }, 3000);
-}
+        if (type === 'error') {
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 500);
+        }
+    }
+
+    function hideAlert() {
+        document.getElementById('modalAlert').classList.add('hidden');
+    }
+
+    async function submitCredentials() {
+        hideAlert();
+
+        const cur_username = document.getElementById('cur_username').value.trim();
+        const cur_password = document.getElementById('cur_password').value.trim();
+        const new_username = document.getElementById('new_username').value.trim();
+        const new_password = document.getElementById('new_password').value.trim();
+        const confirm_password = document.getElementById('confirm_password').value.trim();
+
+        if (!cur_username || !cur_password) {
+            showAlert('Please enter your current username and password.', 'error');
+            return;
+        }
+
+        if (!new_username && !new_password) {
+            showAlert('Please enter a new username or a new password.', 'error');
+            return;
+        }
+
+        if (new_password && new_password !== confirm_password) {
+            showAlert('New passwords do not match.', 'error');
+            return;
+        }
+
+        if (new_password && new_password.length < 6) {
+            showAlert('New password must be at least 6 characters.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('saveBtn');
+        const text = document.getElementById('saveBtnText');
+        btn.disabled = true;
+        text.innerHTML = '<span class="spinner"></span> Saving…';
+
+        try {
+            const res = await fetch('/change_credentials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    current_username: cur_username,
+                    current_password: cur_password,
+                    new_username: new_username,
+                    new_password: new_password,
+                    confirm_password: confirm_password
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                closeModal();
+                showToast('✅', data.message, 'success');
+            } else {
+                showAlert(data.message || 'Failed to update credentials.', 'error');
+            }
+        } catch (err) {
+            showAlert('Network error. Please try again.', 'error');
+        } finally {
+            btn.disabled = false;
+            text.textContent = 'Save Changes';
+        }
+    }
+
+    function showToast(icon, msg, type) {
+        const toast = document.getElementById('toast');
+        const inner = document.getElementById('toastInner');
+        document.getElementById('toastIcon').textContent = icon;
+        document.getElementById('toastMsg').textContent = msg;
+        inner.style.backgroundColor = type === 'success' ? '#16a34a' : '#dc2626';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function handleBackupClick() {
+        const icon = document.getElementById('backupIcon');
+        const text = document.getElementById('backupText');
+        icon.textContent = '⏳';
+        text.textContent = 'Preparing…';
+        setTimeout(() => {
+            icon.textContent = '';
+            text.textContent = 'Download Backup';
+        }, 3000);
+    }
+
+    window.addEventListener('resize', function () {
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+            closeSidebar();
+        }
+    });
 </script>
 
 </body>

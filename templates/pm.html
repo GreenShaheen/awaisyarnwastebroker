@@ -2,25 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Manage Payments - Awais Yarn Waste Broker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
 
-        .nav-tab { transition: all 0.2s; }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .nav-tab {
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
         .nav-tab.active {
             background-color: white;
             color: #1e40af;
             box-shadow: 0 2px 0 #1e40af;
-            font-weight: 600;
+            font-weight: 700;
         }
 
-        .table-row { transition: all 0.2s; }
-        .table-row:hover { background: #eff6ff; }
+        .table-row {
+            transition: all 0.2s ease;
+        }
 
-        .clear-btn { transition: all 0.2s; }
+        .table-row:hover {
+            background: #eff6ff;
+        }
+
+        .clear-btn {
+            transition: all 0.2s ease;
+        }
 
         .suggestions {
             max-height: 280px;
@@ -31,6 +47,7 @@
         #table-scroll-body {
             max-height: 650px;
             overflow-y: auto;
+            overflow-x: auto;
         }
 
         #table-scroll-body table thead tr th {
@@ -47,6 +64,7 @@
 
         .filter-chip {
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .filter-chip.active {
@@ -63,43 +81,119 @@
             background: #cbd5e1;
             border-radius: 999px;
         }
+
+        .sidebar {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .tab-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mobile-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mobile-card:active {
+            transform: scale(0.995);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 88vw;
+                max-width: 340px;
+                top: 0;
+                height: 100vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .mobile-stack {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .mobile-stack > * {
+                width: 100%;
+            }
+        }
     </style>
 </head>
+
 <body class="bg-gray-100">
 
-<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="h-16 flex items-center justify-between">
-            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
-                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10" alt="Logo">
-                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+<nav class="bg-blue-600 text-white shadow-lg fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div class="h-16 md:h-20 flex items-center justify-between gap-3">
+            <a href="/dashboard" class="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition min-w-0">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0" alt="Logo">
+                <h1 class="text-base sm:text-lg md:text-2xl font-semibold truncate">Awais Yarn Waste Broker</h1>
             </a>
-            <div class="flex items-center gap-4">
+
+            <div class="hidden md:flex items-center gap-4">
                 <span id="temp-status" class="bg-blue-500 px-3 py-1 rounded-2xl text-xs hidden">⏳ Loading...</span>
                 <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
-                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100 transition">Logout</a>
             </div>
+
+            <button
+                onclick="toggleSidebar()"
+                class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 hover:bg-blue-400 transition"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
         </div>
     </div>
-    <div class="bg-blue-700 border-b">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-center">
-                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1 flex-wrap justify-center">
-                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
-                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
-                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
-                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
-                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
-                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
-                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+
+    <div class="bg-blue-700 border-b border-blue-800">
+        <div class="max-w-7xl mx-auto px-0 sm:px-4 lg:px-6">
+            <div class="flex justify-start md:justify-center overflow-x-auto tab-scroll">
+                <div class="inline-flex bg-blue-700 rounded-none md:rounded-3xl p-1 md:p-1.5 mx-0 md:mx-auto gap-1 min-w-max w-full md:w-auto px-2 md:px-0">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab active flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Settings</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
 
-<main class="pt-32 min-h-screen">
-    <div class="max-w-7xl mx-auto px-6 py-10">
+<!-- Mobile Sidebar -->
+<div id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-[88vw] max-w-[340px] bg-white shadow-2xl -translate-x-full z-[60] transition-transform duration-300 md:hidden">
+    <div class="p-5 pt-20">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold text-gray-900">Quick Menu</h2>
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-2xl bg-gray-100 hover:bg-gray-200 transition">✕</button>
+        </div>
+
+        <div class="space-y-2">
+            <a href="/dashboard" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Dashboard</a>
+            <a href="/addparticular" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Add Particular</a>
+            <a href="/rm" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Records</a>
+            <a href="/pm" class="block px-4 py-3 rounded-2xl bg-blue-50 font-semibold">Payments</a>
+            <a href="/bs" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Balance Sheet</a>
+            <a href="/pb" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Notes</a>
+            <a href="/settings" class="block px-4 py-3 rounded-2xl hover:bg-blue-50">Settings</a>
+            <a href="/logout" class="block px-4 py-3 rounded-2xl bg-blue-600 text-white text-center mt-3">Logout</a>
+        </div>
+    </div>
+</div>
+
+<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-50 md:hidden"></div>
+
+<main class="pt-[7.5rem] md:pt-32 min-h-screen">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -111,10 +205,10 @@
           {% endif %}
         {% endwith %}
 
-        <h1 class="text-4xl font-bold text-blue-600 mb-8">Manage Payments</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 mb-6 sm:mb-8">Manage Payments</h1>
 
-        <div class="bg-white rounded-3xl shadow-xl p-4 mb-6">
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-3 items-end">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-5 mb-6">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-end">
 
                 <div class="xl:col-span-3">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -163,7 +257,7 @@
                     </select>
                 </div>
 
-                <div class="xl:col-span-2 flex gap-2">
+                <div class="xl:col-span-2 flex gap-2 mobile-stack">
                     <button type="button" onclick="applyDateFilter()"
                             class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl font-medium">
                         Apply
@@ -190,7 +284,7 @@
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
             <div class="xl:col-span-1">
-                <div class="bg-white rounded-3xl shadow-xl p-6">
+                <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6">
                     <h2 class="text-2xl font-semibold mb-5 text-blue-600">Add / Edit Payment</h2>
 
                     <form action="/pm" method="POST" id="payment-form" class="space-y-4">
@@ -203,7 +297,7 @@
                             </label>
                             <div class="relative">
                                 <input type="text" id="customer_name" autocomplete="off"
-                                       class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                                       class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                        placeholder="Type customer name..." required>
                                 <div id="customer-suggestions"
                                      class="suggestions absolute bg-white border border-gray-200 rounded-3xl mt-2 w-full hidden z-50 text-sm"></div>
@@ -214,13 +308,13 @@
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Amount (Rs.) <span class="text-red-500">*</span></label>
                             <input type="number" id="amount" name="amount" step="0.01" required
-                                   class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                                   class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                         </div>
 
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Type <span class="text-red-500">*</span></label>
                             <select id="type" name="type" required
-                                    class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                                    class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                                 <option value="">Select...</option>
                                 <option value="Received">Received</option>
                                 <option value="Paid">Paid</option>
@@ -230,7 +324,7 @@
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Payment Mode</label>
                             <select id="mode" name="mode"
-                                    class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                                    class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                                 <option value="">Select...</option>
                                 <option value="Cash">Cash</option>
                                 <option value="Bank Transfer">Bank Transfer</option>
@@ -243,29 +337,29 @@
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Bank Name / Details</label>
                             <input type="text" id="bank_name" name="bank_name"
-                                   class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                                   class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                         </div>
 
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Date</label>
                             <input type="date" id="date" name="date"
-                                   class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                                   class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
                         </div>
 
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Reference / Notes</label>
                             <input type="text" id="reference" name="reference"
-                                   class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                                   class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg"
                                    placeholder="Optional reference...">
                         </div>
 
-                        <div class="flex gap-4 pt-2">
+                        <div class="flex gap-4 pt-2 mobile-stack">
                             <button type="submit" id="submit-btn"
-                                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
+                                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
                                 Save Payment
                             </button>
                             <button type="button" onclick="resetForm()"
-                                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-3xl transition">
+                                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
                                 Cancel / New
                             </button>
                         </div>
@@ -274,12 +368,12 @@
             </div>
 
             <div class="xl:col-span-2">
-                <div class="bg-white rounded-3xl shadow-xl p-6">
+                <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6">
 
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                         <h2 id="all-payments-heading" class="text-2xl font-semibold text-blue-600">All Payments</h2>
                         <button onclick="downloadPDF()"
-                                class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl font-medium">
+                                class="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl sm:rounded-3xl font-medium">
                             Download PDF
                         </button>
                     </div>
@@ -301,8 +395,9 @@
                         </div>
                     </div>
 
-                    <div id="table-scroll-body" class="border border-gray-100 rounded-2xl overflow-auto">
-                        <table class="w-full">
+                    <!-- Desktop Table -->
+                    <div id="table-scroll-body" class="hidden md:block border border-gray-100 rounded-2xl overflow-auto">
+                        <table class="w-full min-w-[1200px]">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-4 text-left font-semibold">#</th>
@@ -321,6 +416,9 @@
                         </table>
                     </div>
 
+                    <!-- Mobile Cards -->
+                    <div id="payments-cards" class="md:hidden space-y-4"></div>
+
                     <div id="pagination" class="mt-6 flex flex-col items-center gap-4"></div>
                 </div>
             </div>
@@ -330,22 +428,22 @@
 
 <script>
     let allCustomers = [];
-    let tempLoaded   = false;
+    let tempLoaded = false;
 
     async function loadTempCustomers() {
         const statusEl = document.getElementById('temp-status');
-        const hintEl   = document.getElementById('autocomplete-hint');
+        const hintEl = document.getElementById('autocomplete-hint');
 
         statusEl.classList.remove('hidden');
         statusEl.textContent = '⏳ Loading particulars...';
 
         try {
-            const res  = await fetch('/api/customers/load-temp', { method: 'POST' });
+            const res = await fetch('/api/customers/load-temp', { method: 'POST' });
             const data = await res.json();
 
             if (data.customers) {
                 allCustomers = data.customers;
-                tempLoaded   = true;
+                tempLoaded = true;
 
                 statusEl.textContent = `✅ ${allCustomers.length} particulars ready (fresh)`;
                 setTimeout(() => statusEl.classList.add('hidden'), 2500);
@@ -368,24 +466,48 @@
         if (!q) return [];
 
         return allCustomers.filter(c => {
-            const name  = (c.name  || '').toLowerCase();
-            const city  = (c.city  || '').toLowerCase();
+            const name = (c.name || '').toLowerCase();
+            const city = (c.city || '').toLowerCase();
             const phone = (c.phone || '').toString();
             return name.includes(q) || city.includes(q) || phone.includes(q);
         }).slice(0, 12);
     }
 
-    const PER_PAGE = 30;
-    let currentPage        = 1;
-    let currentSearch      = '';
-    let totalPages         = 1;
-    let totalPayments      = 0;
-    let rowOffset          = 0;
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
 
-    let currentFromDate    = '';
-    let currentToDate      = '';
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    const PER_PAGE = 30;
+    let currentPage = 1;
+    let currentSearch = '';
+    let totalPages = 1;
+    let totalPayments = 0;
+    let rowOffset = 0;
+
+    let currentFromDate = '';
+    let currentToDate = '';
     let currentQuickFilter = '';
-    let currentTypeFilter  = '';
+    let currentTypeFilter = '';
     let searchAbortController = null;
 
     function esc(str) {
@@ -411,17 +533,17 @@
 
     function updateHeading() {
         document.getElementById('all-payments-heading').innerHTML =
-            `All Payments <span class="text-gray-500 font-normal text-xl">— ${totalPayments} transactions</span>`;
+            `All Payments <span class="text-gray-500 font-normal text-base sm:text-xl">— ${totalPayments} transactions</span>`;
     }
 
     function updateSummary(data) {
-        const totalPaid      = Number(data.total_paid || 0);
-        const totalReceived  = Number(data.total_received || 0);
+        const totalPaid = Number(data.total_paid || 0);
+        const totalReceived = Number(data.total_received || 0);
         const currentBalance = Number(data.current_balance || (totalReceived - totalPaid));
 
-        document.getElementById('total-paid').textContent       = formatMoney(totalPaid);
-        document.getElementById('total-received').textContent   = formatMoney(totalReceived);
-        document.getElementById('current-balance').textContent  = formatMoney(currentBalance);
+        document.getElementById('total-paid').textContent = formatMoney(totalPaid);
+        document.getElementById('total-received').textContent = formatMoney(totalReceived);
+        document.getElementById('current-balance').textContent = formatMoney(currentBalance);
     }
 
     function updateSelectedRangeLabel() {
@@ -437,10 +559,10 @@
             return;
         }
 
-        if (currentFromDate && currentToDate)   label.textContent = `${currentFromDate} to ${currentToDate}`;
-        else if (currentFromDate)               label.textContent = `From ${currentFromDate}`;
-        else if (currentToDate)                 label.textContent = `Up to ${currentToDate}`;
-        else                                    label.textContent = 'All dates';
+        if (currentFromDate && currentToDate) label.textContent = `${currentFromDate} to ${currentToDate}`;
+        else if (currentFromDate) label.textContent = `From ${currentFromDate}`;
+        else if (currentToDate) label.textContent = `Up to ${currentToDate}`;
+        else label.textContent = 'All dates';
     }
 
     function updateSelectedTypeLabel() {
@@ -462,52 +584,59 @@
     }
 
     async function loadPayments(page = 1, search = '') {
-        currentPage   = page;
+        currentPage = page;
         currentSearch = search.trim();
 
         const tbody = document.getElementById('payments-tbody');
+        const cards = document.getElementById('payments-cards');
+
         tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
+        cards.innerHTML = `<div class="text-center py-10 text-blue-500">Loading...</div>`;
 
         try {
             if (searchAbortController) searchAbortController.abort();
             searchAbortController = new AbortController();
 
             const params = new URLSearchParams({
-                search:   currentSearch,
-                page:     page,
+                search: currentSearch,
+                page: page,
                 per_page: PER_PAGE
             });
 
-            if (currentFromDate)    params.set('from_date', currentFromDate);
-            if (currentToDate)      params.set('to_date',   currentToDate);
-            if (currentQuickFilter) params.set('filter',    currentQuickFilter);
-            if (currentTypeFilter)  params.set('type_filter', currentTypeFilter);
+            if (currentFromDate) params.set('from_date', currentFromDate);
+            if (currentToDate) params.set('to_date', currentToDate);
+            if (currentQuickFilter) params.set('filter', currentQuickFilter);
+            if (currentTypeFilter) params.set('type_filter', currentTypeFilter);
 
-            const res  = await fetch(`/api/payments?${params.toString()}`, {
+            const res = await fetch(`/api/payments?${params.toString()}`, {
                 signal: searchAbortController.signal
             });
             const data = await res.json();
 
             if (data.error) {
                 tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-500">${data.error}</td></tr>`;
+                cards.innerHTML = `<div class="text-center py-10 text-red-500">${data.error}</div>`;
                 return;
             }
 
             totalPayments = data.total || 0;
-            totalPages    = data.total_pages || 1;
-            rowOffset     = (currentPage - 1) * PER_PAGE;
+            totalPages = data.total_pages || 1;
+            rowOffset = (currentPage - 1) * PER_PAGE;
 
             renderTable(data.payments || []);
+            renderCards(data.payments || []);
             renderPagination();
             updateHeading();
             updateSummary(data);
             updateSelectedRangeLabel();
             updateSelectedTypeLabel();
 
-            document.getElementById('table-scroll-body').scrollTop = 0;
+            const tableWrap = document.getElementById('table-scroll-body');
+            if (tableWrap) tableWrap.scrollTop = 0;
         } catch (err) {
             if (err.name === 'AbortError') return;
             tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-400">Failed to load payments</td></tr>`;
+            cards.innerHTML = `<div class="text-center py-10 text-red-400">Failed to load payments</div>`;
         }
     }
 
@@ -525,7 +654,7 @@
             row.className = 'table-row';
 
             const amountClass = p.type === 'Paid' ? 'text-red-600' : 'text-emerald-600';
-            const typeChip    = p.type === 'Paid'
+            const typeChip = p.type === 'Paid'
                 ? 'bg-red-100 text-red-700'
                 : 'bg-emerald-100 text-emerald-700';
 
@@ -534,9 +663,7 @@
             row.innerHTML = `
                 <td class="px-6 py-4 text-gray-400 text-xs">${serialNo}</td>
                 <td class="px-6 py-4 font-medium">${p.customer_name || '-'}</td>
-                <td class="px-6 py-4 font-semibold ${amountClass}">
-                    ${formatMoney(p.amount)}
-                </td>
+                <td class="px-6 py-4 font-semibold ${amountClass}">${formatMoney(p.amount)}</td>
                 <td class="px-6 py-4">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold ${typeChip}">
                         ${p.type || '-'}
@@ -562,6 +689,62 @@
         });
     }
 
+    function renderCards(payments) {
+        const cards = document.getElementById('payments-cards');
+        cards.innerHTML = '';
+
+        if (!payments.length) {
+            cards.innerHTML = `<div class="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl">No payments found</div>`;
+            return;
+        }
+
+        payments.forEach((p, idx) => {
+            const serialNo = totalPayments - rowOffset - idx;
+            const amountClass = p.type === 'Paid' ? 'text-red-600' : 'text-emerald-600';
+            const typeChip = p.type === 'Paid'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-emerald-100 text-emerald-700';
+
+            const card = document.createElement('div');
+            card.className = 'mobile-card bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm';
+            card.innerHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="text-xs text-gray-400 font-medium">#${serialNo}</div>
+                        <h3 class="text-lg font-semibold text-gray-900 break-words">${p.customer_name || '-'}</h3>
+                        <div class="mt-2 text-sm text-gray-600 space-y-1">
+                            <div><span class="font-medium">Amount:</span> <span class="${amountClass} font-semibold">${formatMoney(p.amount)}</span></div>
+                            <div><span class="font-medium">Type:</span> <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${typeChip}">${p.type || '-'}</span></div>
+                            <div><span class="font-medium">Mode:</span> ${p.mode || '-'}</div>
+                            <div><span class="font-medium">Bank:</span> ${p.bank_name || '-'}</div>
+                            <div><span class="font-medium">Date:</span> ${p.payment_date || '-'}</div>
+                            <div class="break-words"><span class="font-medium">Reference:</span> ${p.reference || '-'}</div>
+                            <div><span class="font-medium">Created:</span> ${p.created_at || '-'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <button
+                        onclick="editPayment(
+                            ${p.id}, ${p.customer_id},
+                            '${esc(p.customer_name)}', ${p.amount},
+                            '${esc(p.type)}', '${esc(p.mode || '')}',
+                            '${esc(p.bank_name || '')}', '${esc(p.reference || '')}',
+                            '${esc(p.payment_date || '')}')"
+                        class="w-full py-3 rounded-2xl bg-blue-600 text-white font-semibold text-sm">
+                        Edit
+                    </button>
+                    <button
+                        onclick="deletePayment(${p.id})"
+                        class="w-full py-3 rounded-2xl bg-red-600 text-white font-semibold text-sm">
+                        Delete
+                    </button>
+                </div>
+            `;
+            cards.appendChild(card);
+        });
+    }
+
     function renderPagination() {
         const container = document.getElementById('pagination');
 
@@ -571,24 +754,28 @@
         }
 
         container.innerHTML = `
-            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
+            <div class="flex flex-col sm:flex-row items-center justify-between w-full max-w-md text-sm text-gray-600 gap-3">
                 <button onclick="goToPage(${currentPage - 1})"
-                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+                        class="w-full sm:w-auto px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
                         ${currentPage <= 1 ? 'disabled' : ''}>← Previous</button>
-                <div class="text-center font-semibold text-lg">
+
+                <div class="text-center font-semibold text-base sm:text-lg">
                     Page <span class="text-blue-600">${currentPage}</span>
                     of <span class="text-blue-600">${totalPages}</span>
                 </div>
+
                 <button onclick="goToPage(${currentPage + 1})"
-                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+                        class="w-full sm:w-auto px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
                         ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>
             </div>
-            <div class="flex items-center justify-center gap-3 mt-3 flex-wrap">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-3 flex-wrap">
                 <span class="text-gray-500 font-medium">Go to page:</span>
-                <input id="jump-page" type="number" min="1" max="${totalPages}" value="${currentPage}"
-                       class="w-20 px-5 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-3xl text-center text-lg focus:outline-none">
-                <button onclick="jumpToPage()"
-                        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-3xl text-lg">Jump</button>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <input id="jump-page" type="number" min="1" max="${totalPages}" value="${currentPage}"
+                           class="w-full sm:w-20 px-5 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-3xl text-center text-lg focus:outline-none">
+                    <button onclick="jumpToPage()"
+                            class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-3xl text-lg">Jump</button>
+                </div>
             </div>`;
     }
 
@@ -605,28 +792,28 @@
 
     async function deletePayment(id) {
         if (!confirm('Delete this payment permanently?')) return;
-        const res  = await fetch(`/api/payments/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/payments/${id}`, { method: 'DELETE' });
         const data = await res.json();
         alert(data.message || 'Done');
         if (data.success) loadPayments(currentPage, currentSearch);
     }
 
     function editPayment(id, customerId, customerName, amount, type, mode, bankName, reference, date) {
-        document.getElementById('edit_id').value       = id;
-        document.getElementById('customer_id').value   = customerId;
+        document.getElementById('edit_id').value = id;
+        document.getElementById('customer_id').value = customerId;
         document.getElementById('customer_name').value = customerName;
-        document.getElementById('amount').value        = amount;
-        document.getElementById('type').value          = type;
-        document.getElementById('mode').value          = mode    || '';
-        document.getElementById('bank_name').value     = bankName || '';
-        document.getElementById('reference').value     = reference || '';
-        document.getElementById('date').value          = date    || '';
+        document.getElementById('amount').value = amount;
+        document.getElementById('type').value = type;
+        document.getElementById('mode').value = mode || '';
+        document.getElementById('bank_name').value = bankName || '';
+        document.getElementById('reference').value = reference || '';
+        document.getElementById('date').value = date || '';
         document.getElementById('submit-btn').textContent = 'Update Payment';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetForm() {
-        ['edit_id','customer_id','customer_name','amount','mode','bank_name','reference','date']
+        ['edit_id', 'customer_id', 'customer_name', 'amount', 'mode', 'bank_name', 'reference', 'date']
             .forEach(id => document.getElementById(id).value = '');
         document.getElementById('type').value = '';
         document.getElementById('submit-btn').textContent = 'Save Payment';
@@ -645,9 +832,9 @@
     function applyQuickFilter(filter) {
         currentQuickFilter = filter;
 
-        const today  = new Date();
+        const today = new Date();
         let fromDate = '';
-        let toDate   = getLocalDateString(today);
+        let toDate = getLocalDateString(today);
 
         if (filter === 'today') {
             fromDate = toDate;
@@ -655,7 +842,7 @@
             const y = new Date(today);
             y.setDate(y.getDate() - 1);
             fromDate = getLocalDateString(y);
-            toDate   = fromDate;
+            toDate = fromDate;
         } else {
             const daysMap = { last3: 3, last5: 5, last7: 7, last10: 10 };
             const n = daysMap[filter];
@@ -665,9 +852,9 @@
         }
 
         document.getElementById('from-date').value = fromDate;
-        document.getElementById('to-date').value   = toDate;
+        document.getElementById('to-date').value = toDate;
         currentFromDate = fromDate;
-        currentToDate   = toDate;
+        currentToDate = toDate;
 
         highlightActiveFilter(filter);
         loadPayments(1, document.getElementById('search-input').value.trim());
@@ -675,9 +862,9 @@
 
     function applyDateFilter() {
         currentQuickFilter = '';
-        currentFromDate    = document.getElementById('from-date').value || '';
-        currentToDate      = document.getElementById('to-date').value   || '';
-        currentTypeFilter  = document.getElementById('type-filter').value || '';
+        currentFromDate = document.getElementById('from-date').value || '';
+        currentToDate = document.getElementById('to-date').value || '';
+        currentTypeFilter = document.getElementById('type-filter').value || '';
 
         highlightActiveFilter('');
         loadPayments(1, document.getElementById('search-input').value.trim());
@@ -685,12 +872,12 @@
 
     function resetFilters() {
         currentQuickFilter = '';
-        currentFromDate    = '';
-        currentToDate      = '';
-        currentTypeFilter  = '';
+        currentFromDate = '';
+        currentToDate = '';
+        currentTypeFilter = '';
 
         document.getElementById('from-date').value = '';
-        document.getElementById('to-date').value   = '';
+        document.getElementById('to-date').value = '';
         document.getElementById('type-filter').value = '';
 
         highlightActiveFilter('');
@@ -701,17 +888,17 @@
         const params = new URLSearchParams();
         const search = document.getElementById('search-input').value.trim();
 
-        if (search)             params.set('search', search);
-        if (currentFromDate)    params.set('from_date', currentFromDate);
-        if (currentToDate)      params.set('to_date', currentToDate);
+        if (search) params.set('search', search);
+        if (currentFromDate) params.set('from_date', currentFromDate);
+        if (currentToDate) params.set('to_date', currentToDate);
         if (currentQuickFilter) params.set('filter', currentQuickFilter);
-        if (currentTypeFilter)   params.set('type_filter', currentTypeFilter);
+        if (currentTypeFilter) params.set('type_filter', currentTypeFilter);
 
         window.location.href = `/pm/download_pdf?${params.toString()}`;
     }
 
     function initCustomerAutocomplete() {
-        const input          = document.getElementById('customer_name');
+        const input = document.getElementById('customer_name');
         const suggestionsDiv = document.getElementById('customer-suggestions');
         let debounceTimer;
         let activeIndex = -1;
@@ -758,7 +945,7 @@
                 if (fallbackController) fallbackController.abort();
                 fallbackController = new AbortController();
 
-                const res  = await fetch(`/api/customers?search=${encodeURIComponent(val.trim())}`, {
+                const res = await fetch(`/api/customers?search=${encodeURIComponent(val.trim())}`, {
                     signal: fallbackController.signal
                 });
                 const data = await res.json();
@@ -841,8 +1028,8 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         const searchInput = document.getElementById('search-input');
-        const clearBtn    = document.getElementById('clear-btn');
-        const typeFilter  = document.getElementById('type-filter');
+        const clearBtn = document.getElementById('clear-btn');
+        const typeFilter = document.getElementById('type-filter');
 
         document.getElementById('date').value = getLocalDateString(new Date());
 
@@ -871,6 +1058,18 @@
 
         initCustomerAutocomplete();
         updateSelectedTypeLabel();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeSidebar();
+        }
+    });
+
+    window.addEventListener('resize', function () {
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+            closeSidebar();
+        }
     });
 </script>
 </body>

@@ -2,63 +2,154 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Manage Particulars - Awais Yarn Waste Broker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
-        .nav-tab { transition: all 0.2s; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .nav-tab {
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
         .nav-tab.active {
             background-color: white;
             color: #1e40af;
             box-shadow: 0 2px 0 #1e40af;
-            font-weight: 600;
+            font-weight: 700;
         }
-        .table-row { transition: all 0.2s; }
+
+        .table-row {
+            transition: all 0.2s ease;
+        }
+
         .search-wrapper {
             position: relative;
         }
+
         .clear-btn {
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .tab-scroll {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .mobile-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mobile-card:active {
+            transform: scale(0.995);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 88vw;
+                max-width: 340px;
+                top: 0;
+                height: 100vh;
+            }
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
 <!-- ================= NAVBAR ================= -->
-<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="h-16 flex items-center justify-between">
-            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
-                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10">
-                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+<nav class="bg-blue-600 text-white shadow-lg fixed top-0 inset-x-0 z-50">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+        <div class="h-16 md:h-20 flex items-center justify-between gap-3">
+            <a href="/dashboard" class="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition min-w-0">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-9 h-9 sm:w-10 sm:h-10 shrink-0" alt="Logo">
+                <h1 class="text-base sm:text-lg md:text-2xl font-semibold truncate">
+                    Awais Yarn Waste Broker
+                </h1>
             </a>
-            <div class="flex items-center gap-4">
+
+            <div class="hidden md:flex items-center gap-4">
                 <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
-                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100 transition">
+                    Logout
+                </a>
             </div>
+
+            <button
+                onclick="toggleSidebar()"
+                class="md:hidden inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-blue-500 hover:bg-blue-400 transition"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
         </div>
     </div>
+
     <!-- Tab Bar -->
-    <div class="bg-blue-700 border-b">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-center">
-                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1">
-                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
-                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
-                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
-                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
-                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
-                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
-                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+    <div class="bg-blue-700 border-b border-blue-800">
+        <div class="max-w-7xl mx-auto px-0 sm:px-4 lg:px-6">
+            <div class="flex justify-start md:justify-center overflow-x-auto tab-scroll">
+                <div class="inline-flex bg-blue-700 rounded-none md:rounded-3xl p-1 md:p-1.5 mx-0 md:mx-auto gap-1 min-w-max w-full md:w-auto px-2 md:px-0">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab active flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-4 sm:px-5 md:px-8 py-3 md:py-4 text-white text-sm sm:text-base md:text-lg font-semibold rounded-2xl md:rounded-3xl hover:bg-blue-600 transition">Settings</a>
                 </div>
             </div>
         </div>
     </div>
 </nav>
+
+<!-- ================= SIDEBAR ================= -->
+<div id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-[88vw] max-w-[340px] bg-white shadow-2xl -translate-x-full z-50 md:top-32 md:h-[calc(100vh-8rem)] md:w-72">
+    <div class="p-5 sm:p-6 pt-20 md:pt-6">
+        <div class="flex items-center justify-between mb-6 md:hidden">
+            <h2 class="text-lg font-semibold">Quick Menu</h2>
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-2xl bg-gray-100 hover:bg-gray-200 transition">✕</button>
+        </div>
+
+        <h2 class="hidden md:block text-xl font-semibold mb-8 border-b pb-4">Quick Menu</h2>
+
+        <ul class="space-y-2">
+            <li><a href="/dashboard" class="flex px-4 sm:px-5 py-3.5 rounded-2xl hover:bg-blue-50 transition">Dashboard</a></li>
+            <li><a href="/rm" class="flex px-4 sm:px-5 py-3.5 rounded-2xl hover:bg-blue-50 transition">Records Management</a></li>
+            <li><a href="/pm" class="flex px-4 sm:px-5 py-3.5 rounded-2xl hover:bg-blue-50 transition">Payments Management</a></li>
+            <li><a href="/bs" class="flex px-4 sm:px-5 py-3.5 rounded-2xl hover:bg-blue-50 transition">Balance Sheet</a></li>
+            <li><a href="/pb" class="flex px-4 sm:px-5 py-3.5 rounded-2xl hover:bg-blue-50 transition">Notes</a></li>
+            <li><a href="/settings" class="flex px-4 sm:px-5 py-3.5 rounded-2xl hover:bg-blue-50 transition">Settings</a></li>
+            <li class="md:hidden pt-2">
+                <a href="/logout" class="flex justify-center px-4 py-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition">
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/50 z-40"></div>
+
 <!-- ================= MAIN ================= -->
-<main class="pt-32 min-h-screen">
-    <div class="max-w-7xl mx-auto px-6 py-10">
+<main class="pt-[7.5rem] md:pt-32 min-h-screen">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
@@ -69,93 +160,100 @@
             {% endfor %}
           {% endif %}
         {% endwith %}
-        
-        <h1 class="text-4xl font-bold text-blue-600 mb-8">Manage Particulars</h1>
 
-        <!-- ================= ADD/EDIT FORM ================= -->
-        <h2 class="text-2xl font-semibold mb-6">Add / Edit Particular</h2>
-        <form method="POST" id="particular-form" class="mb-10">
-            <input type="hidden" name="id" id="edit_id">
-            
-            <!-- Input fields side by side -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Name -->
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">Particular Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="name" name="name" required
-                           class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-10">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-600 mb-6 sm:mb-8">
+                Manage Particulars
+            </h1>
+
+            <!-- ================= ADD/EDIT FORM ================= -->
+            <h2 class="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Add / Edit Particular</h2>
+
+            <form method="POST" id="particular-form" class="mb-8 sm:mb-10">
+                <input type="hidden" name="id" id="edit_id">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Particular Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="name" name="name" required
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">City</label>
+                        <input type="text" id="city" name="city"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Phone</label>
+                        <input type="text" id="phone" name="phone"
+                               class="w-full px-4 sm:px-5 py-3.5 sm:py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
+                    </div>
                 </div>
-                <!-- City -->
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">City</label>
-                    <input type="text" id="city" name="city"
-                           class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
-                </div>
-                <!-- Phone -->
-                <div>
-                    <label class="block text-gray-700 font-medium mb-2">Phone</label>
-                    <input type="text" id="phone" name="phone"
-                           class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
-                </div>
-            </div>
 
-            <!-- Buttons -->
-            <div class="flex gap-4 pt-8">
-                <button type="submit" id="submit-btn"
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
-                    Save Particular
-                </button>
-                <button type="button" onclick="resetForm()"
-                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-3xl transition">
-                    Cancel / New
-                </button>
-            </div>
-        </form>
-
-        <!-- ================= ALL PARTICULARS SECTION (with total count) ================= -->
-        <div class="bg-white rounded-3xl shadow-xl p-10 flex flex-col mx-auto max-w-7xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="all-particulars-heading" class="text-2xl font-semibold text-blue-600">
-                    All Particulars
-                </h2>
-                <button onclick="downloadPDF()"
-                        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl font-medium">
-                    Download PDF
-                </button>
-            </div>
-
-            <!-- SEARCH BAR with Clear Button -->
-            <div class="search-wrapper mb-8">
-                <div class="relative">
-                    <input id="search-input" type="text"
-                           class="w-full pl-6 pr-14 py-5 border-2 border-gray-200 focus:border-blue-500 rounded-3xl text-lg placeholder-gray-400 focus:outline-none"
-                           placeholder="Search by name, city or phone...">
-                   
-                    <button id="clear-btn"
-                            onclick="clearSearch()"
-                            class="clear-btn absolute right-6 top-1/2 -translate-y-1/2 text-3xl text-gray-400 hover:text-red-500 hidden">
-                        ×
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 sm:pt-8">
+                    <button type="submit" id="submit-btn"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 sm:py-4 text-base sm:text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
+                        Save Particular
+                    </button>
+                    <button type="button" onclick="resetForm()"
+                            class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3.5 sm:py-4 text-base sm:text-lg font-semibold rounded-2xl sm:rounded-3xl transition">
+                        Cancel / New
                     </button>
                 </div>
-            </div>
+            </form>
 
-            <!-- Table -->
-            <div class="flex-1 overflow-auto max-h-[500px] border border-gray-100 rounded-2xl">
-                <table class="w-full">
-                    <thead class="bg-gray-50 sticky top-0">
-                        <tr>
-                            <th class="px-6 py-4 text-left font-semibold">Name</th>
-                            <th class="px-6 py-4 text-left font-semibold">City</th>
-                            <th class="px-6 py-4 text-left font-semibold">Phone</th>
-                            <th class="px-6 py-4 text-center font-semibold w-28">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="customers-tbody" class="divide-y text-sm"></tbody>
-                </table>
-            </div>
+            <!-- ================= ALL PARTICULARS SECTION ================= -->
+            <div class="bg-white rounded-2xl sm:rounded-3xl shadow-none md:shadow-xl p-0 md:p-10 flex flex-col mx-auto max-w-7xl border md:border-0">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-5 sm:mb-6">
+                    <h2 id="all-particulars-heading" class="text-xl sm:text-2xl font-semibold text-blue-600">
+                        All Particulars
+                    </h2>
 
-            <!-- PAGINATION -->
-            <div id="pagination" class="mt-6 flex flex-col items-center gap-4"></div>
+                    <button onclick="downloadPDF()"
+                            class="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 sm:px-6 py-3 rounded-2xl sm:rounded-3xl font-medium">
+                        Download PDF
+                    </button>
+                </div>
+
+                <!-- SEARCH BAR -->
+                <div class="search-wrapper mb-5 sm:mb-8">
+                    <div class="relative">
+                        <input id="search-input" type="text"
+                               class="w-full pl-4 sm:pl-6 pr-12 sm:pr-14 py-4 sm:py-5 border-2 border-gray-200 focus:border-blue-500 rounded-2xl sm:rounded-3xl text-base sm:text-lg placeholder-gray-400 focus:outline-none"
+                               placeholder="Search by name, city or phone...">
+
+                        <button id="clear-btn"
+                                type="button"
+                                onclick="clearSearch()"
+                                class="clear-btn absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl text-gray-400 hover:text-red-500 hidden">
+                            ×
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TABLE VIEW (tablet/desktop) -->
+                <div class="hidden md:block flex-1 overflow-auto max-h-[500px] border border-gray-100 rounded-2xl">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-4 text-left font-semibold">Name</th>
+                                <th class="px-6 py-4 text-left font-semibold">City</th>
+                                <th class="px-6 py-4 text-left font-semibold">Phone</th>
+                                <th class="px-6 py-4 text-center font-semibold w-28">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-tbody" class="divide-y text-sm"></tbody>
+                    </table>
+                </div>
+
+                <!-- MOBILE CARDS -->
+                <div id="customers-cards" class="md:hidden space-y-4"></div>
+
+                <!-- PAGINATION -->
+                <div id="pagination" class="mt-6 flex flex-col items-center gap-4"></div>
+            </div>
         </div>
     </div>
 </main>
@@ -164,58 +262,108 @@
     let currentPage = 1;
     let currentSearch = '';
     let totalPages = 1;
-    let totalCustomers = 0;           // ← New: Total number of particulars
+    let totalCustomers = 0;
+    let debounceTimer;
+
+    function syncViewportMode() {
+        const isPhone = window.matchMedia('(max-width: 640px)').matches;
+        document.documentElement.classList.toggle('phone-mode', isPhone);
+
+        if (!window.matchMedia('(max-width: 768px)').matches) {
+            closeSidebar();
+        }
+    }
+
+    function openSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar.classList.contains('-translate-x-full')) {
+            openSidebar();
+        } else {
+            closeSidebar();
+        }
+    }
 
     async function loadCustomers(page = 1, search = '') {
         currentPage = page;
         currentSearch = search.trim();
-        
+
         const tbody = document.getElementById('customers-tbody');
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
+        const cards = document.getElementById('customers-cards');
 
-        const res = await fetch(`/api/customers?search=${encodeURIComponent(currentSearch)}&page=${page}`);
-        const data = await res.json();
-
-        if (data.error) {
-            alert(data.error);
-            return;
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
+        }
+        if (cards) {
+            cards.innerHTML = `<div class="text-center py-10 text-blue-500">Loading...</div>`;
         }
 
-        // Save total count (API must return "total" or "count")
-        totalCustomers = data.total || data.count || 0;
-        totalPages = data.total_pages || 1;
+        try {
+            const res = await fetch(`/api/customers?search=${encodeURIComponent(currentSearch)}&page=${page}`);
+            const data = await res.json();
 
-        renderTable(data.customers);
-        renderPagination();
-        updateAllParticularsHeading();   // ← Update heading with total
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            totalCustomers = data.total || data.count || 0;
+            totalPages = data.total_pages || 1;
+
+            renderTable(data.customers || []);
+            renderCards(data.customers || []);
+            renderPagination();
+            updateAllParticularsHeading();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to load particulars.');
+        }
     }
 
     function updateAllParticularsHeading() {
         const heading = document.getElementById('all-particulars-heading');
         if (heading) {
             heading.innerHTML = `
-                All Particulars 
-                <span class="text-gray-500 font-normal">- ${totalCustomers} particulars</span>
+                All Particulars
+                <span class="text-gray-500 font-normal text-base sm:text-lg">- ${totalCustomers} particulars</span>
             `;
         }
     }
 
     function renderTable(customers) {
         const tbody = document.getElementById('customers-tbody');
-        tbody.innerHTML = '';
+        if (!tbody) return;
+
         if (customers.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-400">No particulars found</td></tr>`;
             return;
         }
+
+        tbody.innerHTML = '';
         customers.forEach(c => {
             const row = document.createElement('tr');
             row.className = 'table-row hover:bg-blue-50';
             row.innerHTML = `
-                <td class="px-6 py-5 font-medium">${c.name}</td>
-                <td class="px-6 py-5">${c.city || '-'}</td>
-                <td class="px-6 py-5">${c.phone || '-'}</td>
-                <td class="px-6 py-5 text-center">
-                    <button onclick="editCustomer(${c.id}, '${c.name}', '${c.city||''}', '${c.phone||''}')"
+                <td class="px-6 py-5 font-medium">${escapeHtml(c.name || '')}</td>
+                <td class="px-6 py-5">${escapeHtml(c.city || '-')}</td>
+                <td class="px-6 py-5">${escapeHtml(c.phone || '-')}</td>
+                <td class="px-6 py-5 text-center whitespace-nowrap">
+                    <button onclick="editCustomer(${c.id}, ${JSON.stringify(c.name || '')}, ${JSON.stringify(c.city || '')}, ${JSON.stringify(c.phone || '')})"
                             class="text-blue-600 hover:text-blue-700 text-sm font-medium mr-4">Edit</button>
                     <button onclick="deleteCustomer(${c.id})"
                             class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
@@ -224,36 +372,76 @@
         });
     }
 
+    function renderCards(customers) {
+        const cards = document.getElementById('customers-cards');
+        if (!cards) return;
+
+        if (customers.length === 0) {
+            cards.innerHTML = `<div class="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl">No particulars found</div>`;
+            return;
+        }
+
+        cards.innerHTML = customers.map(c => `
+            <div class="mobile-card bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h3 class="text-lg font-semibold text-gray-900 break-words">${escapeHtml(c.name || '')}</h3>
+                        <p class="mt-1 text-sm text-gray-600"><span class="font-medium">City:</span> ${escapeHtml(c.city || '-')}</p>
+                        <p class="mt-1 text-sm text-gray-600"><span class="font-medium">Phone:</span> ${escapeHtml(c.phone || '-')}</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <button
+                        onclick="editCustomer(${c.id}, ${JSON.stringify(c.name || '')}, ${JSON.stringify(c.city || '')}, ${JSON.stringify(c.phone || '')})"
+                        class="w-full py-3 rounded-2xl bg-blue-600 text-white font-semibold text-sm">
+                        Edit
+                    </button>
+                    <button
+                        onclick="deleteCustomer(${c.id})"
+                        class="w-full py-3 rounded-2xl bg-red-600 text-white font-semibold text-sm">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
     function renderPagination() {
         const pag = document.getElementById('pagination');
-       
-        let html = `
-            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
-                <button onclick="goToPage(${currentPage-1})"
-                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 flex items-center gap-2 font-medium"
+        if (!pag) return;
+
+        pag.innerHTML = `
+            <div class="flex flex-col sm:flex-row items-center justify-between w-full gap-4 text-sm text-gray-600">
+                <button onclick="goToPage(${currentPage - 1})"
+                        class="w-full sm:w-auto px-5 sm:px-6 py-3 border rounded-2xl hover:bg-gray-100 disabled:opacity-40 flex items-center justify-center gap-2 font-medium"
                         ${currentPage <= 1 ? 'disabled' : ''}>
                     Previous
                 </button>
-                <div class="text-center font-semibold text-lg">
+
+                <div class="text-center font-semibold text-base sm:text-lg">
                     Page <span class="text-blue-600">${currentPage}</span> of <span class="text-blue-600">${totalPages}</span>
                 </div>
-                <button onclick="goToPage(${currentPage+1})"
-                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 flex items-center gap-2 font-medium"
+
+                <button onclick="goToPage(${currentPage + 1})"
+                        class="w-full sm:w-auto px-5 sm:px-6 py-3 border rounded-2xl hover:bg-gray-100 disabled:opacity-40 flex items-center justify-center gap-2 font-medium"
                         ${currentPage >= totalPages ? 'disabled' : ''}>
                     Next
                 </button>
             </div>
-            <div class="flex items-center justify-center gap-3 mt-5">
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-5 w-full">
                 <span class="text-gray-500 font-medium">Go to page:</span>
-                <input id="jump-page" type="number" min="1" max="${totalPages}" value="${currentPage}"
-                       class="w-20 px-5 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-3xl text-center text-lg focus:outline-none">
-                <button onclick="jumpToPage()"
-                        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-3xl text-lg">
-                    Jump
-                </button>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <input id="jump-page" type="number" min="1" max="${totalPages}" value="${currentPage}"
+                           class="w-full sm:w-20 px-4 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-2xl text-center text-base sm:text-lg focus:outline-none">
+                    <button onclick="jumpToPage()"
+                            class="px-6 sm:px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-2xl text-base sm:text-lg">
+                        Jump
+                    </button>
+                </div>
             </div>
         `;
-        pag.innerHTML = html;
     }
 
     function goToPage(page) {
@@ -263,7 +451,7 @@
 
     function jumpToPage() {
         const input = document.getElementById('jump-page');
-        let page = parseInt(input.value);
+        const page = parseInt(input.value, 10);
         if (page >= 1 && page <= totalPages) {
             loadCustomers(page, currentSearch);
         } else {
@@ -273,12 +461,21 @@
 
     async function deleteCustomer(id) {
         if (!confirm('Delete this particular permanently?')) return;
-        const res = await fetch(`/api/customers/${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (data.success) {
-            loadCustomers(currentPage, currentSearch);
-            alert(data.message);
-        } else alert(data.message);
+
+        try {
+            const res = await fetch(`/api/customers/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+
+            if (data.success) {
+                loadCustomers(currentPage, currentSearch);
+                alert(data.message);
+            } else {
+                alert(data.message || 'Delete failed.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to delete particular.');
+        }
     }
 
     function editCustomer(id, name, city, phone) {
@@ -309,24 +506,42 @@
         loadCustomers(1, '');
     }
 
-    let debounceTimer;
+    function escapeHtml(text) {
+        return String(text)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        syncViewportMode();
         loadCustomers(1, '');
-        
+
         const searchInput = document.getElementById('search-input');
         const clearBtn = document.getElementById('clear-btn');
-        
+
         searchInput.addEventListener('input', () => {
             if (searchInput.value.trim().length > 0) {
                 clearBtn.classList.remove('hidden');
             } else {
                 clearBtn.classList.add('hidden');
             }
+
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 loadCustomers(1, searchInput.value.trim());
             }, 200);
         });
+    });
+
+    window.addEventListener('resize', syncViewportMode);
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") {
+            closeSidebar();
+        }
     });
 </script>
 </body>
