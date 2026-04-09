@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Awais Yarn Waste Broker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .sidebar { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-tab {
+            transition: all 0.2s;
+        }
+        .nav-tab.active {
+            background-color: white;
+            color: #1e40af;
+            box-shadow: 0 2px 0 #1e40af;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<!-- Top Navbar -->
+<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="h-16 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10">
+                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="bg-blue-700 border-b">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-center">
+                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar fixed top-32 left-0 h-[calc(100vh-8rem)] w-72 bg-white shadow-2xl -translate-x-full z-40">
+    <div class="p-6">
+        <h2 class="text-xl font-semibold mb-8 border-b pb-4">Quick Menu</h2>
+        <ul class="space-y-2">
+            <li><a href="/dashboard" class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Dashboard</a></li>
+            <li><a href="/rm" class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Records Management</a></li>
+            <li><a href="/pm" class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Payments Management</a></li>
+            <li><a href="/bs" class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Balance Sheet</a></li>
+            <li><a href="/pb" class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Notes</a></li>
+            <li><a href="/settings" class="flex px-5 py-4 rounded-2xl hover:bg-blue-50">Settings</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="overlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-black/40 z-30"></div>
+
+<!-- Main Content -->
+<main class="pt-32 min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <div class="bg-white rounded-3xl shadow-xl p-10">
+            <div class="flex items-center gap-4 mb-6">
+                <h1 class="text-5xl font-bold text-blue-600">Welcome to Awais Yarn Waste Broker's Ledger</h1>
+            </div>
+            <p class="text-2xl text-gray-600">You are successfully logged in!</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                <!-- Total Records (Dynamic) -->
+                <div class="bg-blue-50 p-6 rounded-3xl text-center">
+                    <p class="text-blue-600 text-sm">TOTAL RECORDS</p>
+                    <p class="text-5xl font-semibold text-blue-700 mt-3">{{ total_records }}</p>
+                </div>
+
+                <!-- Total Particulars (Dynamic) -->
+                <div class="bg-pink-50 p-6 rounded-3xl text-center">
+                    <p class="text-pink-600 text-sm">TOTAL PARTICULARS</p>
+                    <p class="text-5xl font-semibold text-pink-700 mt-3">{{ total_particulars }}</p>
+                </div>
+
+                <!-- Last Backup Created -->
+                <div class="bg-emerald-50 p-6 rounded-3xl text-center">
+                    <p class="text-emerald-600 text-sm">LAST BACKUP CREATED</p>
+                    <p class="text-2xl md:text-3xl font-semibold text-emerald-700 mt-3 leading-tight">
+                        {{ last_backup_created }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    document.getElementById('overlay').classList.toggle('hidden');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === "Escape") {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
+    }
+});
+</script>
+</body>
+</html>

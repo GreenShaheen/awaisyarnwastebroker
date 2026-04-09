@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - Awais Yarn Waste Broker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .nav-tab { transition: all 0.2s; }
+        .nav-tab.active {
+            background-color: white;
+            color: #1e40af;
+            box-shadow: 0 2px 0 #1e40af;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="h-16 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10" alt="Logo">
+                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="bg-blue-700 border-b">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-center">
+                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1 flex-wrap justify-center">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="pt-32 min-h-screen">
+    <div class="max-w-4xl mx-auto px-6 py-10">
+        <h1 class="text-4xl font-bold text-blue-600 mb-8">Notes</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="mb-6 p-4 rounded-2xl {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="bg-white rounded-3xl shadow-xl p-6">
+            <form method="POST" action="/pb">
+                <div class="mb-6">
+                    <label for="notes_content" class="block text-gray-700 font-medium mb-2">Your Notes (plain text)</label>
+                    <textarea name="notes_content" id="notes_content" rows="15"
+                              class="w-full px-5 py-4 border-2 border-gray-200 rounded-3xl focus:outline-none focus:border-blue-500 text-lg font-mono"
+                              placeholder="Write your notes here...&#10;Each save will replace the entire previous content.">{{ notes }}</textarea>
+                </div>
+                <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
+                    Save Notes
+                </button>
+            </form>
+            <p class="text-xs text-gray-400 mt-4 text-center">⚠️ Warning: Saving will permanently delete any previous notes.</p>
+        </div>
+    </div>
+</main>
+</body>
+</html>

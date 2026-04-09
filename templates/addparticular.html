@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Particulars - Awais Yarn Waste Broker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .nav-tab { transition: all 0.2s; }
+        .nav-tab.active {
+            background-color: white;
+            color: #1e40af;
+            box-shadow: 0 2px 0 #1e40af;
+            font-weight: 600;
+        }
+        .table-row { transition: all 0.2s; }
+        .search-wrapper {
+            position: relative;
+        }
+        .clear-btn {
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+<!-- ================= NAVBAR ================= -->
+<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="h-16 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10">
+                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+            </a>
+            <div class="flex items-center gap-4">
+                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+            </div>
+        </div>
+    </div>
+    <!-- Tab Bar -->
+    <div class="bg-blue-700 border-b">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-center">
+                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+<!-- ================= MAIN ================= -->
+<main class="pt-32 min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="mb-6 p-4 rounded-2xl {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <h1 class="text-4xl font-bold text-blue-600 mb-8">Manage Particulars</h1>
+
+        <!-- ================= ADD/EDIT FORM ================= -->
+        <h2 class="text-2xl font-semibold mb-6">Add / Edit Particular</h2>
+        <form method="POST" id="particular-form" class="mb-10">
+            <input type="hidden" name="id" id="edit_id">
+            
+            <!-- Input fields side by side -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Name -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Particular Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="name" name="name" required
+                           class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                </div>
+                <!-- City -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">City</label>
+                    <input type="text" id="city" name="city"
+                           class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                </div>
+                <!-- Phone -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">Phone</label>
+                    <input type="text" id="phone" name="phone"
+                           class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-4 pt-8">
+                <button type="submit" id="submit-btn"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
+                    Save Particular
+                </button>
+                <button type="button" onclick="resetForm()"
+                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-3xl transition">
+                    Cancel / New
+                </button>
+            </div>
+        </form>
+
+        <!-- ================= ALL PARTICULARS SECTION (with total count) ================= -->
+        <div class="bg-white rounded-3xl shadow-xl p-10 flex flex-col mx-auto max-w-7xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="all-particulars-heading" class="text-2xl font-semibold text-blue-600">
+                    All Particulars
+                </h2>
+                <button onclick="downloadPDF()"
+                        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl font-medium">
+                    Download PDF
+                </button>
+            </div>
+
+            <!-- SEARCH BAR with Clear Button -->
+            <div class="search-wrapper mb-8">
+                <div class="relative">
+                    <input id="search-input" type="text"
+                           class="w-full pl-6 pr-14 py-5 border-2 border-gray-200 focus:border-blue-500 rounded-3xl text-lg placeholder-gray-400 focus:outline-none"
+                           placeholder="Search by name, city or phone...">
+                   
+                    <button id="clear-btn"
+                            onclick="clearSearch()"
+                            class="clear-btn absolute right-6 top-1/2 -translate-y-1/2 text-3xl text-gray-400 hover:text-red-500 hidden">
+                        ×
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="flex-1 overflow-auto max-h-[500px] border border-gray-100 rounded-2xl">
+                <table class="w-full">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-6 py-4 text-left font-semibold">Name</th>
+                            <th class="px-6 py-4 text-left font-semibold">City</th>
+                            <th class="px-6 py-4 text-left font-semibold">Phone</th>
+                            <th class="px-6 py-4 text-center font-semibold w-28">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-tbody" class="divide-y text-sm"></tbody>
+                </table>
+            </div>
+
+            <!-- PAGINATION -->
+            <div id="pagination" class="mt-6 flex flex-col items-center gap-4"></div>
+        </div>
+    </div>
+</main>
+
+<script>
+    let currentPage = 1;
+    let currentSearch = '';
+    let totalPages = 1;
+    let totalCustomers = 0;           // ← New: Total number of particulars
+
+    async function loadCustomers(page = 1, search = '') {
+        currentPage = page;
+        currentSearch = search.trim();
+        
+        const tbody = document.getElementById('customers-tbody');
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
+
+        const res = await fetch(`/api/customers?search=${encodeURIComponent(currentSearch)}&page=${page}`);
+        const data = await res.json();
+
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        // Save total count (API must return "total" or "count")
+        totalCustomers = data.total || data.count || 0;
+        totalPages = data.total_pages || 1;
+
+        renderTable(data.customers);
+        renderPagination();
+        updateAllParticularsHeading();   // ← Update heading with total
+    }
+
+    function updateAllParticularsHeading() {
+        const heading = document.getElementById('all-particulars-heading');
+        if (heading) {
+            heading.innerHTML = `
+                All Particulars 
+                <span class="text-gray-500 font-normal">- ${totalCustomers} particulars</span>
+            `;
+        }
+    }
+
+    function renderTable(customers) {
+        const tbody = document.getElementById('customers-tbody');
+        tbody.innerHTML = '';
+        if (customers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-12 text-gray-400">No particulars found</td></tr>`;
+            return;
+        }
+        customers.forEach(c => {
+            const row = document.createElement('tr');
+            row.className = 'table-row hover:bg-blue-50';
+            row.innerHTML = `
+                <td class="px-6 py-5 font-medium">${c.name}</td>
+                <td class="px-6 py-5">${c.city || '-'}</td>
+                <td class="px-6 py-5">${c.phone || '-'}</td>
+                <td class="px-6 py-5 text-center">
+                    <button onclick="editCustomer(${c.id}, '${c.name}', '${c.city||''}', '${c.phone||''}')"
+                            class="text-blue-600 hover:text-blue-700 text-sm font-medium mr-4">Edit</button>
+                    <button onclick="deleteCustomer(${c.id})"
+                            class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
+                </td>`;
+            tbody.appendChild(row);
+        });
+    }
+
+    function renderPagination() {
+        const pag = document.getElementById('pagination');
+       
+        let html = `
+            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
+                <button onclick="goToPage(${currentPage-1})"
+                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 flex items-center gap-2 font-medium"
+                        ${currentPage <= 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+                <div class="text-center font-semibold text-lg">
+                    Page <span class="text-blue-600">${currentPage}</span> of <span class="text-blue-600">${totalPages}</span>
+                </div>
+                <button onclick="goToPage(${currentPage+1})"
+                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 flex items-center gap-2 font-medium"
+                        ${currentPage >= totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            </div>
+            <div class="flex items-center justify-center gap-3 mt-5">
+                <span class="text-gray-500 font-medium">Go to page:</span>
+                <input id="jump-page" type="number" min="1" max="${totalPages}" value="${currentPage}"
+                       class="w-20 px-5 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-3xl text-center text-lg focus:outline-none">
+                <button onclick="jumpToPage()"
+                        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-3xl text-lg">
+                    Jump
+                </button>
+            </div>
+        `;
+        pag.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+        loadCustomers(page, currentSearch);
+    }
+
+    function jumpToPage() {
+        const input = document.getElementById('jump-page');
+        let page = parseInt(input.value);
+        if (page >= 1 && page <= totalPages) {
+            loadCustomers(page, currentSearch);
+        } else {
+            alert(`Please enter a number between 1 and ${totalPages}`);
+        }
+    }
+
+    async function deleteCustomer(id) {
+        if (!confirm('Delete this particular permanently?')) return;
+        const res = await fetch(`/api/customers/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+            loadCustomers(currentPage, currentSearch);
+            alert(data.message);
+        } else alert(data.message);
+    }
+
+    function editCustomer(id, name, city, phone) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('city').value = city;
+        document.getElementById('phone').value = phone;
+        document.getElementById('submit-btn').textContent = 'Update Particular';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('edit_id').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('city').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('submit-btn').textContent = 'Save Particular';
+    }
+
+    function downloadPDF() {
+        window.location.href = '/addparticular/download_pdf';
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('search-input');
+        input.value = '';
+        document.getElementById('clear-btn').classList.add('hidden');
+        loadCustomers(1, '');
+    }
+
+    let debounceTimer;
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCustomers(1, '');
+        
+        const searchInput = document.getElementById('search-input');
+        const clearBtn = document.getElementById('clear-btn');
+        
+        searchInput.addEventListener('input', () => {
+            if (searchInput.value.trim().length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                loadCustomers(1, searchInput.value.trim());
+            }, 200);
+        });
+    });
+</script>
+</body>
+</html>

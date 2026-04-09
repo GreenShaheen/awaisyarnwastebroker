@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Records - Awais Yarn Waste Broker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
+        .nav-tab { transition: all 0.2s; }
+        .nav-tab.active {
+            background-color: white;
+            color: #1e40af;
+            box-shadow: 0 2px 0 #1e40af;
+            font-weight: 600;
+        }
+
+        .table-row { transition: all 0.2s; }
+        .table-row:hover { background: #eff6ff; }
+
+        .clear-btn { transition: all 0.2s; }
+
+        .suggestions {
+            max-height: 280px;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        #table-scroll-body-pay,
+        #table-scroll-body-receive {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        #table-scroll-body-pay table thead tr th,
+        #table-scroll-body-receive table thead tr th {
+            position: sticky;
+            top: 0;
+            background: #f9fafb;
+            z-index: 10;
+        }
+
+        .slim-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .slim-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+        .section-header {
+            border-bottom: 3px solid;
+        }
+
+        .form-patti {
+            background: linear-gradient(90deg, #f8fbff 0%, #ffffff 100%);
+            border: 2px solid #e5e7eb;
+        }
+
+        .tree-filter-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="h-16 flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10" alt="Logo">
+                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+            </a>
+            <div class="flex items-center gap-4">
+                <span id="temp-status" class="bg-blue-500 px-3 py-1 rounded-2xl text-xs hidden">⏳ Loading cache...</span>
+                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="bg-blue-700 border-b">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-center">
+                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1 flex-wrap justify-center">
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="pt-32 min-h-screen">
+    <div class="max-w-7xl mx-auto px-6 py-10">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="mb-6 p-4 rounded-2xl {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <h1 class="text-4xl font-bold text-blue-600 mb-8">Manage Records</h1>
+
+        <!-- ========== ENTRY FORM ========== -->
+        <div class="form-patti rounded-3xl shadow-xl p-6 mb-10">
+            <h2 class="text-2xl font-semibold mb-6 text-blue-600 flex items-center gap-2">
+                <span class="text-3xl"></span> Add / Edit Record
+            </h2>
+
+            <form action="/rm" method="POST" id="record-form">
+
+                <input type="hidden" name="id" id="edit_id">
+                <input type="hidden" name="customer_id" id="customer_id">
+
+                <!-- LINE 1 -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                    <div class="lg:col-span-5">
+                        <label class="block text-gray-700 font-medium mb-2">
+                            Particular / Customer <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="customer_name" autocomplete="off"
+                                   class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                                   placeholder="Type customer name..." required>
+                            <div id="customer-suggestions"
+                                 class="suggestions absolute bg-white border border-gray-200 rounded-3xl mt-2 w-full hidden z-50 text-sm"></div>
+                        </div>
+                        <p id="autocomplete-hint" class="text-xs text-gray-400 mt-1 hidden"></p>
+                    </div>
+
+                    <div class="lg:col-span-3">
+                        <label class="block text-gray-700 font-medium mb-2">Type <span class="text-red-500">*</span></label>
+                        <select id="type" name="type" required
+                                class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                            <option value="">Select...</option>
+                            <option value="to receive">To Receive</option>
+                            <option value="to pay">To Pay</option>
+                        </select>
+                    </div>
+
+                    <div class="lg:col-span-4">
+                        <label class="block text-gray-700 font-medium mb-2">Detail</label>
+                        <input type="text" id="detail" name="detail"
+                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               placeholder="e.g. yarn type, quality...">
+                    </div>
+                </div>
+
+                <!-- LINE 2 -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                    <div class="lg:col-span-2">
+                        <label class="block text-gray-700 font-medium mb-2">Weight (kg)</label>
+                        <input type="number" id="weight" name="weight" step="0.0001" min="0"
+                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               placeholder="0.00" oninput="autoCalcAmount()">
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-gray-700 font-medium mb-2">Rate (Rs./kg)</label>
+                        <input type="number" id="rate" name="rate" step="0.0001" min="0"
+                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               placeholder="0.00" oninput="autoCalcAmount()">
+                    </div>
+                    <div class="lg:col-span-3">
+                        <label class="block text-gray-700 font-medium mb-2">
+                            Total Amount (Rs.) <span class="text-red-500">*</span>
+                            <span class="text-xs text-blue-500 font-normal ml-1">auto-calculated</span>
+                        </label>
+                        <input type="number" id="total_amount" name="total_amount" step="0.01" min="0" required
+                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg bg-blue-50"
+                               placeholder="0.00">
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-gray-700 font-medium mb-2">Date</label>
+                        <input type="date" id="date" name="date"
+                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg">
+                    </div>
+                    <div class="lg:col-span-3">
+                        <label class="block text-gray-700 font-medium mb-2">Reference / Notes</label>
+                        <input type="text" id="reference" name="reference"
+                               class="w-full px-5 py-4 border-2 rounded-3xl focus:outline-none focus:border-blue-500 text-lg"
+                               placeholder="Optional reference...">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-2">
+                    <button type="submit" id="submit-btn"
+                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold rounded-3xl transition">
+                        Save Record
+                    </button>
+                    <button type="button" onclick="resetForm()"
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 text-lg font-semibold rounded-3xl transition">
+                        Cancel / New
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ========== SIDE-BY-SIDE TREEVIEWS ========== -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+
+            <!-- ==================== TO PAY TREEVIEW ==================== -->
+            <div class="bg-white rounded-3xl shadow-xl p-6 border-l-4 border-red-500">
+                
+                <div class="tree-filter-bar rounded-3xl p-5 mb-6">
+                    
+                    <!-- Search input – searches Customer, Detail, Reference -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search To Pay</label>
+                        <div class="relative">
+                            <input id="search-input-pay" type="text" autocomplete="off"
+                                   class="w-full pl-5 pr-14 py-3.5 border-2 border-gray-200 focus:border-red-500 rounded-2xl text-base placeholder-gray-400 focus:outline-none"
+                                   placeholder="Customer, detail, reference...">
+                            <button id="clear-btn-pay" onclick="clearSearchPay()"
+                                    class="clear-btn absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-gray-400 hover:text-red-500 hidden">
+                                ×
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- From Date + To Date -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                            <input type="date" id="from-date-pay"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 focus:border-red-500 rounded-2xl focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                            <input type="date" id="to-date-pay"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 focus:border-red-500 rounded-2xl focus:outline-none bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Apply & Reset -->
+                    <div class="flex gap-3">
+                        <button onclick="applyDateFilterPay()"
+                                class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-2xl font-medium">
+                            Apply Filters
+                        </button>
+                        <button onclick="resetFiltersPay()"
+                                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-2xl font-medium">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 section-header pb-4">
+                    <h2 id="to-pay-heading" class="text-2xl font-semibold text-red-600">To Pay Records</h2>
+                    <button onclick="downloadToPayPDF()"
+                            class="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-3xl font-medium">
+                        Download PDF
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-6">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-gray-700 font-medium">Total Amount (To Pay)</div>
+                        <div id="to-pay-total-amount" class="text-2xl font-bold text-red-600">Rs. 0.00</div>
+                    </div>
+                </div>
+
+                <div id="table-scroll-body-pay" class="border border-gray-100 rounded-2xl overflow-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-4 text-left font-semibold">#</th>
+                                <th class="px-4 py-4 text-left font-semibold">Customer</th>
+                                <th class="px-4 py-4 text-left font-semibold">Detail</th>
+                                <th class="px-4 py-4 text-left font-semibold">Weight</th>
+                                <th class="px-4 py-4 text-left font-semibold">Rate</th>
+                                <th class="px-4 py-4 text-left font-semibold">Amount</th>
+                                <th class="px-4 py-4 text-left font-semibold">Date</th>
+                                <th class="px-4 py-4 text-left font-semibold">Reference</th>
+                                <th class="px-4 py-4 text-left font-semibold">Created</th>
+                                <th class="px-4 py-4 text-center font-semibold w-28">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-tbody-pay" class="divide-y text-sm"></tbody>
+                    </table>
+                </div>
+
+                <div id="pagination-pay" class="mt-6 flex flex-col items-center gap-4"></div>
+            </div>
+
+            <!-- ==================== TO RECEIVE TREEVIEW ==================== -->
+            <div class="bg-white rounded-3xl shadow-xl p-6 border-l-4 border-emerald-500">
+                
+                <div class="tree-filter-bar rounded-3xl p-5 mb-6">
+                    
+                    <!-- Search input – searches Customer, Detail, Reference -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search To Receive</label>
+                        <div class="relative">
+                            <input id="search-input-receive" type="text" autocomplete="off"
+                                   class="w-full pl-5 pr-14 py-3.5 border-2 border-gray-200 focus:border-emerald-500 rounded-2xl text-base placeholder-gray-400 focus:outline-none"
+                                   placeholder="Customer, detail, reference...">
+                            <button id="clear-btn-receive" onclick="clearSearchReceive()"
+                                    class="clear-btn absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-gray-400 hover:text-emerald-500 hidden">
+                                ×
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- From Date + To Date -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                            <input type="date" id="from-date-receive"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 focus:border-emerald-500 rounded-2xl focus:outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                            <input type="date" id="to-date-receive"
+                                   class="w-full px-4 py-3 border-2 border-gray-200 focus:border-emerald-500 rounded-2xl focus:outline-none bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Apply & Reset -->
+                    <div class="flex gap-3">
+                        <button onclick="applyDateFilterReceive()"
+                                class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-medium">
+                            Apply Filters
+                        </button>
+                        <button onclick="resetFiltersReceive()"
+                                class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-2xl font-medium">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 section-header pb-4">
+                    <h2 id="to-receive-heading" class="text-2xl font-semibold text-emerald-600">To Receive Records</h2>
+                    <button onclick="downloadToReceivePDF()"
+                            class="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-3xl font-medium">
+                        Download PDF
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-6">
+                    <div class="flex items-center justify-between py-3">
+                        <div class="text-gray-700 font-medium">Total Amount (To Receive)</div>
+                        <div id="to-receive-total-amount" class="text-2xl font-bold text-emerald-600">Rs. 0.00</div>
+                    </div>
+                </div>
+
+                <div id="table-scroll-body-receive" class="border border-gray-100 rounded-2xl overflow-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-4 text-left font-semibold">#</th>
+                                <th class="px-4 py-4 text-left font-semibold">Customer</th>
+                                <th class="px-4 py-4 text-left font-semibold">Detail</th>
+                                <th class="px-4 py-4 text-left font-semibold">Weight</th>
+                                <th class="px-4 py-4 text-left font-semibold">Rate</th>
+                                <th class="px-4 py-4 text-left font-semibold">Amount</th>
+                                <th class="px-4 py-4 text-left font-semibold">Date</th>
+                                <th class="px-4 py-4 text-left font-semibold">Reference</th>
+                                <th class="px-4 py-4 text-left font-semibold">Created</th>
+                                <th class="px-4 py-4 text-center font-semibold w-28">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-tbody-receive" class="divide-y text-sm"></tbody>
+                    </table>
+                </div>
+
+                <div id="pagination-receive" class="mt-6 flex flex-col items-center gap-4"></div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script>
+    // ==================== CUSTOMER CACHE ====================
+    let allCustomers = [];
+    let tempLoaded = false;
+
+    async function loadTempCustomers() {
+        const statusEl = document.getElementById('temp-status');
+        const hintEl = document.getElementById('autocomplete-hint');
+
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = '⏳ Loading customers cache...';
+
+        try {
+            const res = await fetch('/api/records/customers/load-temp', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.customers) {
+                allCustomers = data.customers;
+                tempLoaded = true;
+                statusEl.textContent = `✅ ${allCustomers.length} customers cached (allcustomers.json)`;
+                setTimeout(() => statusEl.classList.add('hidden'), 3000);
+
+                hintEl.textContent = `${allCustomers.length} customers ready`;
+                hintEl.classList.remove('hidden');
+                setTimeout(() => hintEl.classList.add('hidden'), 3000);
+            }
+        } catch (err) {
+            statusEl.textContent = '⚠️ Customer cache failed';
+            setTimeout(() => statusEl.classList.add('hidden'), 3000);
+        }
+    }
+
+    async function loadTempRecords() {
+        const statusEl = document.getElementById('temp-status');
+        statusEl.classList.remove('hidden');
+        statusEl.textContent = '⏳ Caching all records...';
+
+        try {
+            const res = await fetch('/api/records/load-temp-records', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.success) {
+                statusEl.textContent = `✅ ${data.records_count} records cached`;
+                setTimeout(() => statusEl.classList.add('hidden'), 3000);
+            }
+        } catch (err) {
+            statusEl.textContent = '⚠️ Records cache failed';
+            setTimeout(() => statusEl.classList.add('hidden'), 3000);
+        }
+    }
+
+    function filterCustomers(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) return [];
+        return allCustomers.filter(c => {
+            const name = (c.name || '').toLowerCase();
+            const city = (c.city || '').toLowerCase();
+            const phone = (c.phone || '').toString();
+            return name.includes(q) || city.includes(q) || phone.includes(q);
+        }).slice(0, 12);
+    }
+
+    // ==================== PER-TYPE FILTER STATE ====================
+    let currentSearchPay = '';
+    let currentFromDatePay = '';
+    let currentToDatePay = '';
+
+    let currentSearchReceive = '';
+    let currentFromDateReceive = '';
+    let currentToDateReceive = '';
+
+    // ==================== PAGINATION STATE ====================
+    let toPayPage = 1;
+    let toPayTotalPages = 1;
+    let toPayTotalRecords = 0;
+
+    let toReceivePage = 1;
+    let toReceiveTotalPages = 1;
+    let toReceiveTotalRecords = 0;
+
+    const PER_PAGE = 10;
+
+    // ==================== HELPERS ====================
+    function esc(str) {
+        return String(str ?? '')
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/\n/g, ' ');
+    }
+
+    function formatMoney(value) {
+        const num = Number(value || 0);
+        return `Rs. ${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function formatNum(value, decimals = 4) {
+        if (value === null || value === undefined || value === '') return '-';
+        return Number(value).toLocaleString('en-IN', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: decimals
+        });
+    }
+
+    function getLocalDateString(dateObj) {
+        const tzOffset = dateObj.getTimezoneOffset() * 60000;
+        const localDate = new Date(dateObj.getTime() - tzOffset);
+        return localDate.toISOString().split('T')[0];
+    }
+
+    // ==================== AUTO CALC ====================
+    function autoCalcAmount() {
+        const weight = parseFloat(document.getElementById('weight').value) || 0;
+        const rate = parseFloat(document.getElementById('rate').value) || 0;
+        if (weight > 0 && rate > 0) {
+            document.getElementById('total_amount').value = (weight * rate).toFixed(2);
+        }
+    }
+
+    // ==================== FILTER HELPERS - TO PAY ====================
+    function clearSearchPay() {
+        document.getElementById('search-input-pay').value = '';
+        document.getElementById('clear-btn-pay').classList.add('hidden');
+        currentSearchPay = '';
+        loadToPay(1);
+    }
+
+    function applyDateFilterPay() {
+        currentFromDatePay = document.getElementById('from-date-pay').value || '';
+        currentToDatePay = document.getElementById('to-date-pay').value || '';
+        loadToPay(1);
+    }
+
+    function resetFiltersPay() {
+        currentFromDatePay = '';
+        currentToDatePay = '';
+        document.getElementById('from-date-pay').value = '';
+        document.getElementById('to-date-pay').value = '';
+        loadToPay(1);
+    }
+
+    // ==================== FILTER HELPERS - TO RECEIVE ====================
+    function clearSearchReceive() {
+        document.getElementById('search-input-receive').value = '';
+        document.getElementById('clear-btn-receive').classList.add('hidden');
+        currentSearchReceive = '';
+        loadToReceive(1);
+    }
+
+    function applyDateFilterReceive() {
+        currentFromDateReceive = document.getElementById('from-date-receive').value || '';
+        currentToDateReceive = document.getElementById('to-date-receive').value || '';
+        loadToReceive(1);
+    }
+
+    function resetFiltersReceive() {
+        currentFromDateReceive = '';
+        currentToDateReceive = '';
+        document.getElementById('from-date-receive').value = '';
+        document.getElementById('to-date-receive').value = '';
+        loadToReceive(1);
+    }
+
+    // ==================== TO PAY LOAD ====================
+    async function loadToPay(page = 1) {
+        toPayPage = page;
+        const tbody = document.getElementById('records-tbody-pay');
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-500">Loading To Pay......</td></tr>`;
+
+        try {
+            const params = new URLSearchParams({
+                search: currentSearchPay,
+                page: page,
+                per_page: PER_PAGE,
+                type_filter: 'to pay'
+            });
+            if (currentFromDatePay) params.set('from_date', currentFromDatePay);
+            if (currentToDatePay) params.set('to_date', currentToDatePay);
+
+            const res = await fetch(`/api/records?${params.toString()}`);
+            const data = await res.json();
+
+            toPayTotalRecords = data.total || 0;
+            toPayTotalPages = data.total_pages || 1;
+
+            renderTableToPay(data.records || []);
+            renderPaginationToPay();
+            updateToPaySummary(data);
+            updateToPayHeading();
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-400">Failed to load To Pay records</td></tr>`;
+        }
+    }
+
+    function renderTableToPay(records) {
+        const tbody = document.getElementById('records-tbody-pay');
+        tbody.innerHTML = '';
+        if (!records.length) {
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-gray-400">No To Pay records found</td></tr>`;
+            return;
+        }
+        records.forEach((r, idx) => {
+            const row = document.createElement('tr');
+            row.className = 'table-row';
+            const serialNo = (toPayPage - 1) * PER_PAGE + idx + 1;
+            row.innerHTML = `
+                <td class="px-4 py-4 text-gray-400 text-xs">${serialNo}</td>
+                <td class="px-4 py-4 font-medium">${r.customer_name || '-'}</td>
+                <td class="px-4 py-4 max-w-[120px] truncate">${r.detail || '-'}</td>
+                <td class="px-4 py-4">${r.weight !== null ? formatNum(r.weight) : '-'}</td>
+                <td class="px-4 py-4">${r.rate !== null ? formatNum(r.rate) : '-'}</td>
+                <td class="px-4 py-4 font-semibold text-red-600">${formatMoney(r.total_amount)}</td>
+                <td class="px-4 py-4 whitespace-nowrap">${r.record_date || '-'}</td>
+                <td class="px-4 py-4 max-w-[140px] truncate">${r.reference || '-'}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-500">${r.created_at || '-'}</td>
+                <td class="px-4 py-4 text-center whitespace-nowrap">
+                    <button onclick="editRecord(${r.id}, ${r.customer_id}, '${esc(r.customer_name)}', '${esc(r.type)}', '${esc(r.detail||'')}', ${r.weight||''}, ${r.rate||''}, ${r.total_amount}, '${esc(r.reference||'')}', '${esc(r.record_date||'')}')" 
+                            class="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3">Edit</button>
+                    <button onclick="deleteRecord(${r.id})" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
+                </td>`;
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateToPaySummary(data) {
+        document.getElementById('to-pay-total-amount').textContent = formatMoney(data.total_to_pay || 0);
+    }
+
+    function updateToPayHeading() {
+        document.getElementById('to-pay-heading').innerHTML = `To Pay Records <span class="text-gray-500 font-normal text-xl">— ${toPayTotalRecords} records</span>`;
+    }
+
+    function renderPaginationToPay() {
+        const container = document.getElementById('pagination-pay');
+        if (toPayTotalPages <= 1) { container.innerHTML = ''; return; }
+        container.innerHTML = `
+            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
+                <button onclick="goToPayPage(${toPayPage - 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toPayPage <= 1 ? 'disabled' : ''}>← Previous</button>
+                <div class="text-center font-semibold text-lg">Page <span class="text-red-600">${toPayPage}</span> of <span class="text-red-600">${toPayTotalPages}</span></div>
+                <button onclick="goToPayPage(${toPayPage + 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toPayPage >= toPayTotalPages ? 'disabled' : ''}>Next →</button>
+            </div>`;
+    }
+
+    function goToPayPage(page) {
+        if (page < 1 || page > toPayTotalPages) return;
+        loadToPay(page);
+    }
+
+    // ==================== TO RECEIVE LOAD ====================
+    async function loadToReceive(page = 1) {
+        toReceivePage = page;
+        const tbody = document.getElementById('records-tbody-receive');
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-emerald-500">Loading To Receive...</td></tr>`;
+
+        try {
+            const params = new URLSearchParams({
+                search: currentSearchReceive,
+                page: page,
+                per_page: PER_PAGE,
+                type_filter: 'to receive'
+            });
+            if (currentFromDateReceive) params.set('from_date', currentFromDateReceive);
+            if (currentToDateReceive) params.set('to_date', currentToDateReceive);
+
+            const res = await fetch(`/api/records?${params.toString()}`);
+            const data = await res.json();
+
+            toReceiveTotalRecords = data.total || 0;
+            toReceiveTotalPages = data.total_pages || 1;
+
+            renderTableToReceive(data.records || []);
+            renderPaginationToReceive();
+            updateToReceiveSummary(data);
+            updateToReceiveHeading();
+        } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-red-400">Failed to load To Receive records</td></tr>`;
+        }
+    }
+
+    function renderTableToReceive(records) {
+        const tbody = document.getElementById('records-tbody-receive');
+        tbody.innerHTML = '';
+        if (!records.length) {
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-gray-400">No To Receive records found</td></tr>`;
+            return;
+        }
+        records.forEach((r, idx) => {
+            const row = document.createElement('tr');
+            row.className = 'table-row';
+            const serialNo = (toReceivePage - 1) * PER_PAGE + idx + 1;
+            row.innerHTML = `
+                <td class="px-4 py-4 text-gray-400 text-xs">${serialNo}</td>
+                <td class="px-4 py-4 font-medium">${r.customer_name || '-'}</td>
+                <td class="px-4 py-4 max-w-[120px] truncate">${r.detail || '-'}</td>
+                <td class="px-4 py-4">${r.weight !== null ? formatNum(r.weight) : '-'}</td>
+                <td class="px-4 py-4">${r.rate !== null ? formatNum(r.rate) : '-'}</td>
+                <td class="px-4 py-4 font-semibold text-emerald-600">${formatMoney(r.total_amount)}</td>
+                <td class="px-4 py-4 whitespace-nowrap">${r.record_date || '-'}</td>
+                <td class="px-4 py-4 max-w-[140px] truncate">${r.reference || '-'}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-xs text-gray-500">${r.created_at || '-'}</td>
+                <td class="px-4 py-4 text-center whitespace-nowrap">
+                    <button onclick="editRecord(${r.id}, ${r.customer_id}, '${esc(r.customer_name)}', '${esc(r.type)}', '${esc(r.detail||'')}', ${r.weight||''}, ${r.rate||''}, ${r.total_amount}, '${esc(r.reference||'')}', '${esc(r.record_date||'')}')" 
+                            class="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3">Edit</button>
+                    <button onclick="deleteRecord(${r.id})" class="text-red-600 hover:text-red-700 text-sm font-medium">Delete</button>
+                </td>`;
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateToReceiveSummary(data) {
+        document.getElementById('to-receive-total-amount').textContent = formatMoney(data.total_to_receive || 0);
+    }
+
+    function updateToReceiveHeading() {
+        document.getElementById('to-receive-heading').innerHTML = `To Receive Records <span class="text-gray-500 font-normal text-xl">— ${toReceiveTotalRecords} records</span>`;
+    }
+
+    function renderPaginationToReceive() {
+        const container = document.getElementById('pagination-receive');
+        if (toReceiveTotalPages <= 1) { container.innerHTML = ''; return; }
+        container.innerHTML = `
+            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
+                <button onclick="goToReceivePage(${toReceivePage - 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toReceivePage <= 1 ? 'disabled' : ''}>← Previous</button>
+                <div class="text-center font-semibold text-lg">Page <span class="text-emerald-600">${toReceivePage}</span> of <span class="text-emerald-600">${toReceiveTotalPages}</span></div>
+                <button onclick="goToReceivePage(${toReceivePage + 1})" class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium" ${toReceivePage >= toReceiveTotalPages ? 'disabled' : ''}>Next →</button>
+            </div>`;
+    }
+
+    function goToReceivePage(page) {
+        if (page < 1 || page > toReceiveTotalPages) return;
+        loadToReceive(page);
+    }
+
+    // ==================== CRUD ====================
+    async function deleteRecord(id) {
+        if (!confirm('Delete this record permanently?')) return;
+        const res = await fetch(`/api/records/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        alert(data.message || 'Done');
+        if (data.success) {
+            loadToPay(toPayPage);
+            loadToReceive(toReceivePage);
+        }
+    }
+
+    function editRecord(id, customerId, customerName, type, detail, weight, rate, totalAmount, reference, date) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('customer_id').value = customerId;
+        document.getElementById('customer_name').value = customerName;
+        document.getElementById('type').value = type;
+        document.getElementById('detail').value = detail || '';
+        document.getElementById('weight').value = (weight !== '' && weight !== null) ? weight : '';
+        document.getElementById('rate').value = (rate !== '' && rate !== null) ? rate : '';
+        document.getElementById('total_amount').value = totalAmount;
+        document.getElementById('reference').value = reference || '';
+        document.getElementById('date').value = date || '';
+        document.getElementById('submit-btn').textContent = 'Update Record';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        ['edit_id','customer_id','customer_name','detail','weight','rate','total_amount','reference','date']
+            .forEach(id => document.getElementById(id).value = '');
+        document.getElementById('type').value = '';
+        document.getElementById('submit-btn').textContent = 'Save Record';
+        document.getElementById('customer-suggestions').classList.add('hidden');
+        document.getElementById('customer-suggestions').innerHTML = '';
+        document.getElementById('date').value = getLocalDateString(new Date());
+    }
+
+    // ==================== PDF DOWNLOADS ====================
+    function downloadToPayPDF() {
+        const params = new URLSearchParams();
+        if (currentSearchPay) params.set('search', currentSearchPay);
+        if (currentFromDatePay) params.set('from_date', currentFromDatePay);
+        if (currentToDatePay) params.set('to_date', currentToDatePay);
+        params.set('type_filter', 'to pay');
+        window.location.href = `/rm/download_pdf?${params.toString()}`;
+    }
+
+    function downloadToReceivePDF() {
+        const params = new URLSearchParams();
+        if (currentSearchReceive) params.set('search', currentSearchReceive);
+        if (currentFromDateReceive) params.set('from_date', currentFromDateReceive);
+        if (currentToDateReceive) params.set('to_date', currentToDateReceive);
+        params.set('type_filter', 'to receive');
+        window.location.href = `/rm/download_pdf?${params.toString()}`;
+    }
+
+    // ==================== CUSTOMER AUTOCOMPLETE ====================
+    function initCustomerAutocomplete() {
+        const input = document.getElementById('customer_name');
+        const suggestionsDiv = document.getElementById('customer-suggestions');
+        let debounceTimer;
+        let activeIndex = -1;
+        let fallbackController = null;
+
+        function renderSuggestions(customers) {
+            suggestionsDiv.innerHTML = '';
+            activeIndex = -1;
+            if (customers.length > 0) {
+                customers.forEach(c => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item px-5 py-3 hover:bg-blue-50 cursor-pointer border-b last:border-none flex items-center gap-3';
+                    item.innerHTML = `<div class="flex-1"><div class="font-semibold">${c.name || ''}</div><div class="text-xs text-gray-500">${c.city || '—'} • ${c.phone || '—'}</div></div>`;
+                    item.addEventListener('mousedown', e => {
+                        e.preventDefault();
+                        input.value = c.name || '';
+                        document.getElementById('customer_id').value = c.id || '';
+                        suggestionsDiv.classList.add('hidden');
+                    });
+                    suggestionsDiv.appendChild(item);
+                });
+            } else {
+                suggestionsDiv.innerHTML = `<div class="px-5 py-3 text-gray-400 text-sm">No customers found</div>`;
+            }
+            suggestionsDiv.classList.remove('hidden');
+        }
+
+        function searchLocal(val) { renderSuggestions(filterCustomers(val)); }
+
+        async function searchRemote(val) {
+            try {
+                if (fallbackController) fallbackController.abort();
+                fallbackController = new AbortController();
+                const res = await fetch(`/api/records/customers?search=${encodeURIComponent(val.trim())}`, { signal: fallbackController.signal });
+                const data = await res.json();
+                renderSuggestions(data.customers || []);
+            } catch (err) {}
+        }
+
+        function fetchSuggestions(val) {
+            if (!val.trim()) return;
+            if (tempLoaded && allCustomers.length > 0) searchLocal(val);
+            else searchRemote(val);
+        }
+
+        function highlight(items) {
+            items.forEach((item, i) => item.classList.toggle('bg-blue-100', i === activeIndex));
+            if (activeIndex >= 0 && items[activeIndex]) items[activeIndex].scrollIntoView({ block: 'nearest' });
+        }
+
+        input.addEventListener('focus', () => { const val = input.value.trim(); if (val.length >= 1) fetchSuggestions(val); });
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const val = input.value.trim();
+            document.getElementById('customer_id').value = '';
+            if (val.length === 0) { suggestionsDiv.classList.add('hidden'); return; }
+            if (tempLoaded) fetchSuggestions(val);
+            else debounceTimer = setTimeout(() => fetchSuggestions(val), 180);
+        });
+
+        input.addEventListener('keydown', e => {
+            const items = suggestionsDiv.querySelectorAll('.suggestion-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                highlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, -1);
+                highlight(items);
+            } else if (e.key === 'Enter' && activeIndex >= 0 && items[activeIndex]) {
+                e.preventDefault();
+                items[activeIndex].dispatchEvent(new Event('mousedown'));
+            } else if (e.key === 'Escape') {
+                suggestionsDiv.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', e => {
+            if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) suggestionsDiv.classList.add('hidden');
+        });
+    }
+
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', async () => {
+        document.getElementById('date').value = getLocalDateString(new Date());
+
+        await loadTempCustomers();
+        await loadTempRecords();
+
+        loadToPay(1);
+        loadToReceive(1);
+
+        // Search To Pay
+        const searchInputPay = document.getElementById('search-input-pay');
+        const clearBtnPay = document.getElementById('clear-btn-pay');
+        searchInputPay.addEventListener('input', () => {
+            const value = searchInputPay.value.trim();
+            clearBtnPay.classList.toggle('hidden', value.length === 0);
+            clearTimeout(window.searchDebouncePay);
+            if (value.length === 0) { currentSearchPay = ''; loadToPay(1); return; }
+            window.searchDebouncePay = setTimeout(() => { currentSearchPay = value; loadToPay(1); }, 220);
+        });
+
+        // Search To Receive
+        const searchInputReceive = document.getElementById('search-input-receive');
+        const clearBtnReceive = document.getElementById('clear-btn-receive');
+        searchInputReceive.addEventListener('input', () => {
+            const value = searchInputReceive.value.trim();
+            clearBtnReceive.classList.toggle('hidden', value.length === 0);
+            clearTimeout(window.searchDebounceReceive);
+            if (value.length === 0) { currentSearchReceive = ''; loadToReceive(1); return; }
+            window.searchDebounceReceive = setTimeout(() => { currentSearchReceive = value; loadToReceive(1); }, 220);
+        });
+
+        initCustomerAutocomplete();
+    });
+</script>
+</body>
+</html>

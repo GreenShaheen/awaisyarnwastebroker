@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Balance Sheet - Awais Yarn Waste Broker</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
+        .nav-tab { transition: all 0.2s; }
+
+        .nav-tab.active {
+
+            background-color: white;
+
+            color: #1e40af;
+
+            box-shadow: 0 2px 0 #1e40af;
+
+            font-weight: 600;
+
+        }
+
+        .table-row { transition: background 0.15s; cursor: pointer; }
+
+        .table-row:hover { background: #eff6ff; }
+
+        .table-row:active { background: #dbeafe; }
+
+        #table-scroll-body {
+
+            max-height: 650px;
+
+            overflow-y: auto;
+
+        }
+
+        #table-scroll-body table thead tr th {
+
+            position: sticky;
+
+            top: 0;
+
+            background: #f9fafb;
+
+            z-index: 10;
+
+        }
+
+        .stat-card {
+
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+
+            border: 1px solid #e5e7eb;
+
+        }
+
+        /* ── POPUP OVERLAY ── */
+
+        .modal-overlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0,0,0,0.55);
+
+            z-index: 1000;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 16px;
+
+            animation: fadeIn 0.15s ease;
+
+        }
+
+        .modal-overlay.hidden { display: none; }
+
+        @keyframes fadeIn {
+
+            from { opacity: 0; }
+
+            to { opacity: 1; }
+
+        }
+
+        .modal-box {
+
+            background: #fff;
+
+            border-radius: 24px;
+
+            width: 100%;
+
+            max-width: 1100px;
+
+            max-height: 92vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+
+            animation: slideUp 0.18s ease;
+
+            overflow: hidden;
+
+        }
+
+        @keyframes slideUp {
+
+            from { transform: translateY(30px); opacity: 0; }
+
+            to { transform: translateY(0); opacity: 1; }
+
+        }
+
+        .modal-header {
+
+            padding: 20px 24px 16px;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            flex-shrink: 0;
+
+        }
+
+        .modal-body {
+
+            overflow-y: auto;
+
+            flex: 1;
+
+            padding: 20px 24px 24px;
+
+        }
+
+        /* Scrollbar for popup treeviews:
+           5 or fewer records usually won't overflow,
+           6+ records will show the scrollbar automatically. */
+        .modal-tbl-wrap {
+
+            overflow-x: auto;
+
+            overflow-y: auto;
+
+            max-height: 300px;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 16px;
+
+        }
+
+        .modal-tbl-wrap table {
+
+            width: 100%;
+
+            min-width: 760px;
+
+            border-collapse: collapse;
+
+            font-size: 0.82rem;
+
+        }
+
+        .modal-tbl-wrap table thead th {
+
+            background: #f9fafb;
+
+            padding: 10px 12px;
+
+            text-align: left;
+
+            font-weight: 600;
+
+            font-size: 0.78rem;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 5;
+
+        }
+
+        .modal-tbl-wrap table tbody tr {
+
+            border-top: 1px solid #f3f4f6;
+
+            transition: background 0.12s;
+
+        }
+
+        .modal-tbl-wrap table tbody tr:hover { background: #f0f9ff; }
+
+        .modal-tbl-wrap table tbody td {
+
+            padding: 9px 12px;
+
+            vertical-align: middle;
+
+        }
+
+        .section-divider {
+
+            border-left: 4px solid;
+
+            padding-left: 12px;
+
+            margin-bottom: 12px;
+
+        }
+
+        /* Dark theme */
+
+        body.theme-dark { background: #0f172a; color: #e2e8f0; }
+
+        body.theme-dark nav { background-color: #1e3a5f !important; }
+
+        body.theme-dark .bg-blue-700 { background-color: #1e3a5f !important; }
+
+        body.theme-dark .bg-white { background-color: #1e293b !important; color: #e2e8f0; }
+
+        body.theme-dark .bg-gray-50 { background-color: #273549 !important; }
+
+        body.theme-dark .bg-gray-100 { background-color: #0f172a !important; }
+
+        body.theme-dark .border-gray-200,
+        body.theme-dark .border-gray-100 { border-color: #334155 !important; }
+
+        body.theme-dark .text-gray-700 { color: #cbd5e1 !important; }
+
+        body.theme-dark .text-gray-500 { color: #94a3b8 !important; }
+
+        body.theme-dark .text-gray-400 { color: #64748b !important; }
+
+        body.theme-dark .text-gray-900 { color: #f1f5f9 !important; }
+
+        body.theme-dark input, body.theme-dark select {
+
+            background-color: #1e293b !important;
+
+            color: #e2e8f0 !important;
+
+            border-color: #475569 !important;
+
+        }
+
+        body.theme-dark .table-row:hover { background: #1e3a5f !important; }
+
+        body.theme-dark #table-scroll-body table thead tr th { background: #273549 !important; }
+
+        body.theme-dark .stat-card { background: #1e293b !important; border-color: #334155 !important; }
+
+        body.theme-dark .bg-gray-200 { background-color: #334155 !important; }
+
+        body.theme-dark .text-gray-600 { color: #94a3b8 !important; }
+
+        body.theme-dark .modal-box { background: #1e293b !important; color: #e2e8f0; }
+
+        body.theme-dark .modal-header { border-color: #334155 !important; }
+
+        body.theme-dark .modal-tbl-wrap { border-color: #334155 !important; }
+
+        body.theme-dark .modal-tbl-wrap table thead th { background: #273549 !important; }
+
+        body.theme-dark .modal-tbl-wrap table tbody tr:hover { background: #1e3a5f !important; }
+
+        /* Warm theme */
+
+        body.theme-warm { background: #fef9f0; }
+
+        body.theme-warm nav { background-color: #b45309 !important; }
+
+        body.theme-warm .bg-blue-700 { background-color: #92400e !important; }
+
+        body.theme-warm .text-blue-600 { color: #92400e !important; }
+
+        body.theme-warm .bg-blue-600 { background-color: #b45309 !important; }
+
+        body.theme-warm .table-row:hover { background: #fef3c7 !important; }
+
+    </style>
+
+</head>
+
+<body class="bg-gray-100" id="body-root">
+
+<nav class="bg-blue-600 text-white shadow-lg fixed w-full z-50">
+
+    <div class="max-w-7xl mx-auto px-6">
+
+        <div class="h-16 flex items-center justify-between">
+
+            <a href="/dashboard" class="flex items-center gap-3 hover:opacity-90 transition">
+
+                <img src="{{ url_for('static', filename='images/yarn.png') }}" class="w-10 h-10" alt="Logo">
+
+                <h1 class="text-2xl font-semibold">Awais Yarn Waste Broker</h1>
+
+            </a>
+
+            <div class="flex items-center gap-4">
+
+                <span class="bg-blue-500 px-4 py-1.5 rounded-2xl text-sm">👋 Welcome, Admin</span>
+
+                <a href="/logout" class="bg-white text-blue-600 px-6 py-2 rounded-2xl hover:bg-gray-100">Logout</a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="bg-blue-700 border-b">
+
+        <div class="max-w-7xl mx-auto px-6">
+
+            <div class="flex justify-center">
+
+                <div class="inline-flex bg-blue-700 rounded-3xl p-1.5 mx-auto gap-1 flex-wrap justify-center">
+
+                    <a href="/dashboard" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Home</a>
+
+                    <a href="/addparticular" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Add Parti</a>
+
+                    <a href="/rm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Records</a>
+
+                    <a href="/pm" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Payments</a>
+
+                    <a href="/bs" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Balance Sheet</a>
+
+                    <a href="/pb" class="nav-tab flex items-center gap-2 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Notes</a>
+
+                    <a href="/settings" class="nav-tab flex items-center gap-3 px-8 py-4 text-white text-lg font-semibold rounded-3xl hover:bg-blue-600 transition">Settings</a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<main class="pt-32 min-h-screen">
+
+    <div class="max-w-7xl mx-auto px-6 py-10">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+          {% if messages %}
+
+            {% for category, message in messages %}
+
+              <div class="mb-6 p-4 rounded-2xl {{ 'bg-green-100 text-green-700' if category == 'success' else 'bg-red-100 text-red-700' }}">
+
+                {{ message }}
+
+              </div>
+
+            {% endfor %}
+
+          {% endif %}
+
+        {% endwith %}
+
+        <h1 class="text-4xl font-bold text-blue-600 mb-2">Balance Sheet</h1>
+
+        <p class="text-sm text-gray-400 mb-8">Double-click any row to view that particular's records &amp; payments.</p>
+
+        <div class="bg-white rounded-3xl shadow-xl p-4 mb-6">
+
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-3 items-end">
+
+                <div class="xl:col-span-5">
+
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Particular / City</label>
+
+                    <div class="relative">
+
+                        <input id="search-input" type="text" autocomplete="off"
+
+                               class="w-full pl-5 pr-14 py-3 border-2 border-gray-200 focus:border-blue-500 rounded-2xl text-base placeholder-gray-400 focus:outline-none"
+
+                               placeholder="Type name or city...">
+
+                        <button id="clear-btn" onclick="clearSearch()"
+
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-2xl text-gray-400 hover:text-red-500 hidden transition">×</button>
+
+                    </div>
+
+                </div>
+
+                <div class="xl:col-span-7 flex gap-2 items-end">
+
+                    <div class="flex-1">
+
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+
+                        <select id="sort-select"
+
+                                class="w-full px-4 py-3 border-2 border-gray-200 focus:border-blue-500 rounded-2xl focus:outline-none bg-white"
+
+                                onchange="loadSheet(1)">
+
+                            <option value="customer_asc">Particular A→Z</option>
+
+                            <option value="customer_desc">Particular Z→A</option>
+
+                            <option value="balance_asc">Balance Low→High</option>
+
+                            <option value="balance_desc">Balance High→Low</option>
+
+                            <option value="topay_desc">To Pay (High first)</option>
+
+                            <option value="toreceive_desc">To Receive (High first)</option>
+
+                        </select>
+
+                    </div>
+
+                    <button type="button" onclick="resetFilters()"
+
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-3 rounded-2xl font-medium text-sm whitespace-nowrap">
+
+                        Reset
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+
+            <div class="stat-card rounded-3xl p-5 shadow">
+
+                <div class="text-xs text-gray-500 font-medium mb-1">Particular</div>
+
+                <div id="sum-count" class="text-2xl font-bold text-gray-800">—</div>
+
+            </div>
+
+            <div class="stat-card rounded-3xl p-5 shadow">
+
+                <div class="text-xs text-gray-500 font-medium mb-1">Total To Pay</div>
+
+                <div id="sum-topay" class="text-xl font-bold text-red-600">—</div>
+
+            </div>
+
+            <div class="stat-card rounded-3xl p-5 shadow">
+
+                <div class="text-xs text-gray-500 font-medium mb-1">Total To Receive</div>
+
+                <div id="sum-toreceive" class="text-xl font-bold text-emerald-600">—</div>
+
+            </div>
+
+            <div class="stat-card rounded-3xl p-5 shadow">
+
+                <div class="text-xs text-gray-500 font-medium mb-1">Payments Made</div>
+
+                <div id="sum-pmade" class="text-xl font-bold text-orange-500">—</div>
+
+            </div>
+
+            <div class="stat-card rounded-3xl p-5 shadow">
+
+                <div class="text-xs text-gray-500 font-medium mb-1">Total Received</div>
+
+                <div id="sum-preceived" class="text-xl font-bold text-blue-600">—</div>
+
+            </div>
+
+            <div class="stat-card rounded-3xl p-5 shadow">
+
+                <div class="text-xs text-gray-500 font-medium mb-1">Current Balance</div>
+
+                <div id="sum-balance" class="text-xl font-bold">—</div>
+
+                <div id="sum-balance-note" class="text-xs mt-1 text-gray-500">—</div>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl p-6">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+                <h2 id="sheet-heading" class="text-2xl font-semibold text-blue-600">Balance Sheet</h2>
+
+                <button onclick="downloadPDF()"
+
+                        class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-3xl font-medium">
+
+                    Download PDF
+
+                </button>
+
+            </div>
+
+            <div id="table-scroll-body" class="border border-gray-100 rounded-2xl overflow-auto">
+
+                <table class="w-full min-w-[760px]">
+
+                    <thead class="bg-gray-50">
+
+                        <tr>
+
+                            <th class="px-5 py-4 text-left font-semibold text-sm w-12">#</th>
+
+                            <th class="px-5 py-4 text-left font-semibold text-sm">Particular (City)</th>
+
+                            <th class="px-5 py-4 text-right font-semibold text-sm">To Pay</th>
+
+                            <th class="px-5 py-4 text-right font-semibold text-sm">To Receive</th>
+
+                            <th class="px-5 py-4 text-right font-semibold text-sm">Pmts Made</th>
+
+                            <th class="px-5 py-4 text-right font-semibold text-sm">Pmts Received</th>
+
+                            <th class="px-5 py-4 text-right font-semibold text-sm">Balance</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="sheet-tbody" class="divide-y text-sm"></tbody>
+
+                </table>
+
+            </div>
+
+            <div id="pagination" class="mt-6 flex flex-col items-center gap-4"></div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════
+     RECORDS POPUP MODAL
+════════════════════════════════════════════════════════ -->
+
+<div id="records-modal" class="modal-overlay hidden" onclick="handleOverlayClick(event,'records-modal')">
+
+    <div class="modal-box" onclick="event.stopPropagation()">
+
+        <!-- Header -->
+
+        <div class="modal-header flex items-start justify-between gap-4">
+
+            <div>
+
+                <h2 id="rec-modal-title" class="text-2xl font-bold text-blue-600">Records</h2>
+
+                <p id="rec-modal-subtitle" class="text-sm text-gray-500 mt-0.5"></p>
+
+            </div>
+
+            <div class="flex items-center gap-3 flex-shrink-0">
+
+                <button onclick="openPaymentsModal()"
+
+                        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition">
+
+                    View Payments
+
+                </button>
+
+                <button onclick="downloadLedgerPDF()"
+
+                        class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition">
+
+                    Download A-Ledger
+
+                </button>
+
+                <button onclick="downloadRecordsPDF()"
+
+                        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition">
+
+                    Download PDF
+
+                </button>
+
+                <button onclick="closeModal('records-modal')"
+
+                        class="text-gray-400 hover:text-red-500 text-3xl leading-none font-bold transition">×</button>
+
+            </div>
+
+        </div>
+
+        <!-- Body -->
+
+        <div class="modal-body">
+
+            <!-- Summary cards -->
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
+
+                    <div class="text-xs text-red-500 font-medium mb-1">Total To Pay</div>
+
+                    <div id="rec-total-pay" class="text-xl font-bold text-red-600">Rs. 0.00</div>
+
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+
+                    <div class="text-xs text-emerald-600 font-medium mb-1">Total To Receive</div>
+
+                    <div id="rec-total-receive" class="text-xl font-bold text-emerald-600">Rs. 0.00</div>
+
+                </div>
+
+            </div>
+
+            <!-- TO PAY section -->
+
+            <div class="mb-8">
+
+                <div class="section-divider border-red-500 mb-4">
+
+                    <h3 class="text-lg font-bold text-red-600">
+
+                        To Pay Records
+
+                        <span id="rec-pay-count" class="text-gray-400 font-normal text-base ml-2"></span>
+
+                    </h3>
+
+                </div>
+
+                <div class="modal-tbl-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>#</th>
+
+                                <th>Detail</th>
+
+                                <th>Weight (kg)</th>
+
+                                <th>Rate</th>
+
+                                <th class="text-right">Amount</th>
+
+                                <th>Date</th>
+
+                                <th>Reference</th>
+
+                                <th>Created</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="rec-tbody-pay"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <!-- TO RECEIVE section -->
+
+            <div>
+
+                <div class="section-divider border-emerald-500 mb-4">
+
+                    <h3 class="text-lg font-bold text-emerald-600">
+
+                        To Receive Records
+
+                        <span id="rec-receive-count" class="text-gray-400 font-normal text-base ml-2"></span>
+
+                    </h3>
+
+                </div>
+
+                <div class="modal-tbl-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>#</th>
+
+                                <th>Detail</th>
+
+                                <th>Weight (kg)</th>
+
+                                <th>Rate</th>
+
+                                <th class="text-right">Amount</th>
+
+                                <th>Date</th>
+
+                                <th>Reference</th>
+
+                                <th>Created</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="rec-tbody-receive"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAYMENTS POPUP MODAL
+════════════════════════════════════════════════════════ -->
+
+<div id="payments-modal" class="modal-overlay hidden" onclick="handleOverlayClick(event,'payments-modal')">
+
+    <div class="modal-box" onclick="event.stopPropagation()">
+
+        <!-- Header -->
+
+        <div class="modal-header flex items-start justify-between gap-4">
+
+            <div>
+
+                <h2 id="pay-modal-title" class="text-2xl font-bold text-blue-600">Payments</h2>
+
+                <p id="pay-modal-subtitle" class="text-sm text-gray-500 mt-0.5"></p>
+
+            </div>
+
+            <div class="flex items-center gap-3 flex-shrink-0">
+
+                <button onclick="downloadPaymentsPDF()"
+
+                        class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-2xl font-semibold text-sm transition">
+
+                    Download PDF
+
+                </button>
+
+                <button onclick="closeModal('payments-modal')"
+
+                        class="text-gray-400 hover:text-red-500 text-3xl leading-none font-bold transition">×</button>
+
+            </div>
+
+        </div>
+
+        <!-- Body -->
+
+        <div class="modal-body">
+
+            <!-- Summary cards -->
+
+            <div class="grid grid-cols-3 gap-4 mb-6">
+
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
+
+                    <div class="text-xs text-red-500 font-medium mb-1">Total Paid</div>
+
+                    <div id="pay-total-paid" class="text-xl font-bold text-red-600">Rs. 0.00</div>
+
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+
+                    <div class="text-xs text-emerald-600 font-medium mb-1">Total Received</div>
+
+                    <div id="pay-total-received" class="text-xl font-bold text-emerald-600">Rs. 0.00</div>
+
+                </div>
+
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4">
+
+                    <div class="text-xs text-blue-600 font-medium mb-1">Net Balance</div>
+
+                    <div id="pay-net-balance" class="text-xl font-bold text-blue-600">Rs. 0.00</div>
+
+                </div>
+
+            </div>
+
+            <!-- Payments table -->
+
+            <div class="modal-tbl-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th class="text-right">Amount</th>
+
+                            <th>Type</th>
+
+                            <th>Mode</th>
+
+                            <th>Bank / Details</th>
+
+                            <th>Reference</th>
+
+                            <th>Date</th>
+
+                            <th>Created</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="pay-tbody"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    // ══════════════════════════════════════════════════════
+    // BALANCE SHEET MAIN TABLE
+    // ══════════════════════════════════════════════════════
+
+    const PER_PAGE = 40;
+
+    let currentPage = 1;
+
+    let currentSearch = '';
+
+    let totalPages = 1;
+
+    let totalRows = 0;
+
+    let currentSortField = 'particular';
+
+    let currentSortDir = 'asc';
+
+    let searchAbortCtrl = null;
+
+    // Currently selected customer (for popup PDFs)
+
+    let activeCustomerId = null;
+
+    let activeCustomerName = '';
+
+    function fmt(value) {
+
+        const n = Number(value || 0);
+
+        return `Rs. ${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    }
+
+    function fmtSigned(value) {
+
+        const n = Number(value || 0);
+
+        if (n > 0) return `+ ${fmt(n)}`;
+
+        if (n < 0) return `- ${fmt(Math.abs(n))}`;
+
+        return fmt(0);
+
+    }
+
+    function getSortParams() {
+
+        const sortVal = document.getElementById('sort-select').value;
+
+        const map = {
+
+            customer_asc: ['customer', 'asc'],
+
+            customer_desc: ['customer', 'desc'],
+
+            balance_asc: ['balance', 'asc'],
+
+            balance_desc: ['balance', 'desc'],
+
+            topay_desc: ['topay', 'desc'],
+
+            toreceive_desc: ['toreceive','desc'],
+
+        };
+
+        return map[sortVal] || ['customer', 'asc'];
+
+    }
+
+    function clearSearch() {
+
+        document.getElementById('search-input').value = '';
+
+        document.getElementById('clear-btn').classList.add('hidden');
+
+        loadSheet(1, '');
+
+    }
+
+    function resetFilters() {
+
+        document.getElementById('search-input').value = '';
+
+        document.getElementById('sort-select').value = 'customer_asc';
+
+        document.getElementById('clear-btn').classList.add('hidden');
+
+        loadSheet(1, '');
+
+    }
+
+    async function loadSheet(page = 1, search = null) {
+
+        currentPage = page;
+
+        if (search !== null) currentSearch = search.trim();
+
+        const [sf, sd] = getSortParams();
+
+        currentSortField = sf;
+
+        currentSortDir = sd;
+
+        const tbody = document.getElementById('sheet-tbody');
+
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
+
+        try {
+
+            if (searchAbortCtrl) searchAbortCtrl.abort();
+
+            searchAbortCtrl = new AbortController();
+
+            const params = new URLSearchParams({
+
+                search: currentSearch,
+
+                page: page,
+
+                per_page: PER_PAGE,
+
+                sort_field: currentSortField,
+
+                sort_dir: currentSortDir,
+
+            });
+
+            const res = await fetch(`/api/balance_sheet?${params}`, { signal: searchAbortCtrl.signal });
+
+            const data = await res.json();
+
+            if (data.error) {
+
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-500">${data.error}</td></tr>`;
+
+                return;
+
+            }
+
+            totalRows = data.total || 0;
+
+            totalPages = data.total_pages || 1;
+
+            renderTable(data.rows || []);
+
+            renderSummary(data);
+
+            renderPagination();
+
+            document.getElementById('sheet-heading').innerHTML =
+
+                `Balance Sheet <span class="text-gray-500 font-normal text-xl">— ${totalRows} Particulars</span>`;
+
+            document.getElementById('table-scroll-body').scrollTop = 0;
+
+        } catch (err) {
+
+            if (err.name === 'AbortError') return;
+
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-red-400">Failed to load data</td></tr>`;
+
+        }
+
+    }
+
+    function renderTable(rows) {
+
+        const tbody = document.getElementById('sheet-tbody');
+
+        tbody.innerHTML = '';
+
+        if (!rows.length) {
+
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-12 text-gray-400">No records found</td></tr>`;
+
+            return;
+
+        }
+
+        rows.forEach((r, idx) => {
+
+            const bal = Number(r['Balance'] || 0);
+
+            const rowNum = (currentPage - 1) * PER_PAGE + idx + 1;
+
+            const balClass = bal > 0 ? 'text-emerald-600 font-bold'
+
+                            : bal < 0 ? 'text-red-600 font-bold'
+
+                            : 'text-gray-500';
+
+            const tr = document.createElement('tr');
+
+            tr.className = 'table-row';
+
+            tr.title = 'Double-click to view records & payments';
+
+            tr.dataset.customerId = r['customer_id'] || '';
+
+            tr.dataset.customerName = r['Customer (City)'] || '';
+
+            tr.innerHTML = `
+
+                <td class="px-5 py-4 text-gray-400 text-xs">${rowNum}</td>
+
+                <td class="px-5 py-4 font-medium">${r['Customer (City)'] || '—'}</td>
+
+                <td class="px-5 py-4 text-right text-red-600">${fmt(r['Total To Pay'])}</td>
+
+                <td class="px-5 py-4 text-right text-emerald-600">${fmt(r['Total To Receive'])}</td>
+
+                <td class="px-5 py-4 text-right text-orange-500">${fmt(r['Payments Made'])}</td>
+
+                <td class="px-5 py-4 text-right text-blue-600">${fmt(r['Payments Received'])}</td>
+
+                <td class="px-5 py-4 text-right ${balClass}">${fmtSigned(bal)}</td>`;
+
+            // Double-click → open records popup
+
+            tr.addEventListener('dblclick', () => {
+
+                const cid = tr.dataset.customerId;
+
+                const cname= tr.dataset.customerName;
+
+                if (cid) openRecordsModal(parseInt(cid), cname);
+
+            });
+
+            tbody.appendChild(tr);
+
+        });
+
+    }
+
+    function renderSummary(data) {
+
+        const bal = Number(data.sum_balance || 0);
+
+        document.getElementById('sum-count').textContent = data.total || 0;
+
+        document.getElementById('sum-topay').textContent = fmt(data.sum_topay);
+
+        document.getElementById('sum-toreceive').textContent = fmt(data.sum_toreceive);
+
+        document.getElementById('sum-pmade').textContent = fmt(data.sum_pmade);
+
+        document.getElementById('sum-preceived').textContent = fmt(data.sum_preceived ?? data.sum_received ?? 0);
+
+        const balanceEl = document.getElementById('sum-balance');
+
+        const noteEl = document.getElementById('sum-balance-note');
+
+        balanceEl.textContent = fmtSigned(bal);
+
+        balanceEl.className = `text-xl font-bold ${
+            bal > 0 ? 'text-emerald-600' : bal < 0 ? 'text-red-600' : 'text-gray-600'
+        }`;
+
+        if (bal > 0) {
+
+            noteEl.textContent = 'We will receive this amount';
+
+            noteEl.className = 'text-xs mt-1 text-emerald-600';
+
+        } else if (bal < 0) {
+
+            noteEl.textContent = 'We have to pay this amount';
+
+            noteEl.className = 'text-xs mt-1 text-red-600';
+
+        } else {
+
+            noteEl.textContent = 'Account settled';
+
+            noteEl.className = 'text-xs mt-1 text-gray-500';
+
+        }
+
+    }
+
+    function renderPagination() {
+
+        const container = document.getElementById('pagination');
+
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        container.innerHTML = `
+
+            <div class="flex items-center justify-between w-full max-w-md text-sm text-gray-600">
+
+                <button onclick="goToPage(${currentPage - 1})"
+
+                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+
+                        ${currentPage <= 1 ? 'disabled' : ''}>← Previous</button>
+
+                <div class="text-center font-semibold text-lg">
+
+                    Page <span class="text-blue-600">${currentPage}</span>
+
+                    of <span class="text-blue-600">${totalPages}</span>
+
+                </div>
+
+                <button onclick="goToPage(${currentPage + 1})"
+
+                        class="px-6 py-3 border rounded-3xl hover:bg-gray-100 disabled:opacity-40 font-medium"
+
+                        ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>
+
+            </div>
+
+            <div class="flex items-center justify-center gap-3 mt-3 flex-wrap">
+
+                <span class="text-gray-500 font-medium">Go to page:</span>
+
+                <input id="jump-page" type="number" min="1" max="${totalPages}" value="${currentPage}"
+
+                       class="w-20 px-5 py-3 border-2 border-gray-300 focus:border-blue-500 rounded-3xl text-center text-lg focus:outline-none">
+
+                <button onclick="jumpToPage()"
+
+                        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-3xl text-lg">Jump</button>
+
+            </div>`;
+
+    }
+
+    function goToPage(page) {
+
+        if (page < 1 || page > totalPages) return;
+
+        loadSheet(page);
+
+    }
+
+    function jumpToPage() {
+
+        const page = parseInt(document.getElementById('jump-page').value);
+
+        if (page >= 1 && page <= totalPages) loadSheet(page);
+
+        else alert(`Please enter a number between 1 and ${totalPages}`);
+
+    }
+
+    function downloadPDF() {
+
+        const [sf, sd] = getSortParams();
+
+        const params = new URLSearchParams({
+
+            search: currentSearch,
+
+            sort_field: sf,
+
+            sort_dir: sd,
+
+        });
+
+        window.location.href = `/bs/download_pdf?${params}`;
+
+    }
+
+    // ══════════════════════════════════════════════════════
+    // RECORDS POPUP LOGIC
+    // ══════════════════════════════════════════════════════
+
+    async function openRecordsModal(customerId, customerName) {
+
+        activeCustomerId = customerId;
+
+        activeCustomerName = customerName;
+
+        // Set headings
+
+        document.getElementById('rec-modal-title').textContent = customerName || 'Records';
+
+       
+
+        // Reset tables to loading state
+
+        setTableLoading('rec-tbody-pay', 8, 'text-red-400');
+
+        setTableLoading('rec-tbody-receive', 8, 'text-emerald-500');
+
+        document.getElementById('rec-total-pay').textContent = 'Loading…';
+
+        document.getElementById('rec-total-receive').textContent = 'Loading…';
+
+        document.getElementById('rec-pay-count').textContent = '';
+
+        document.getElementById('rec-receive-count').textContent = '';
+
+        // Show modal
+
+        document.getElementById('records-modal').classList.remove('hidden');
+
+        document.body.style.overflow = 'hidden';
+
+        try {
+
+            const res = await fetch(`/api/customer/${customerId}/records`);
+
+            const data = await res.json();
+
+            if (data.error) {
+
+                setTableError('rec-tbody-pay', 8, data.error);
+
+                setTableError('rec-tbody-receive', 8, data.error);
+
+                return;
+
+            }
+
+            const payRecs = (data.records || []).filter(r => (r.type || '').trim().toLowerCase() === 'to pay');
+
+            const receiveRecs = (data.records || []).filter(r => (r.type || '').trim().toLowerCase() === 'to receive');
+
+            document.getElementById('rec-total-pay').textContent = fmt(data.total_to_pay);
+
+            document.getElementById('rec-total-receive').textContent = fmt(data.total_to_receive);
+
+            document.getElementById('rec-pay-count').textContent = `(${payRecs.length} records)`;
+
+            document.getElementById('rec-receive-count').textContent = `(${receiveRecs.length} records)`;
+
+            renderRecordsTbody('rec-tbody-pay', payRecs);
+
+            renderRecordsTbody('rec-tbody-receive', receiveRecs);
+
+        } catch (err) {
+
+            setTableError('rec-tbody-pay', 8, 'Failed to load records');
+
+            setTableError('rec-tbody-receive', 8, 'Failed to load records');
+
+        }
+
+    }
+
+    function renderRecordsTbody(tbodyId, records) {
+
+        const tbody = document.getElementById(tbodyId);
+
+        tbody.innerHTML = '';
+
+        if (!records.length) {
+
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-400">No records found</td></tr>`;
+
+            return;
+
+        }
+
+        records.forEach((r, idx) => {
+
+            const amtClass = (r.type || '').toLowerCase() === 'to pay' ? 'text-red-600' : 'text-emerald-600';
+
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+
+                <td class="text-gray-400">${idx + 1}</td>
+
+                <td>${r.detail || '-'}</td>
+
+                <td>${r.weight != null ? Number(r.weight).toLocaleString('en-IN', {maximumFractionDigits:4}) : '-'}</td>
+
+                <td>${r.rate != null ? Number(r.rate ).toLocaleString('en-IN', {maximumFractionDigits:4}) : '-'}</td>
+
+                <td class="text-right font-semibold ${amtClass}">${fmt(r.total_amount)}</td>
+
+                <td class="whitespace-nowrap">${r.record_date || '-'}</td>
+
+                <td class="max-w-[140px] truncate">${r.reference || '-'}</td>
+
+                <td class="text-xs text-gray-400 whitespace-nowrap">${r.created_at || '-'}</td>`;
+
+            tbody.appendChild(tr);
+
+        });
+
+    }
+
+    // ══════════════════════════════════════════════════════
+    // PAYMENTS POPUP LOGIC
+    // ══════════════════════════════════════════════════════
+
+    async function openPaymentsModal() {
+
+        if (!activeCustomerId) return;
+
+        document.getElementById('pay-modal-title').textContent = activeCustomerName || 'Payments';
+
+        document.getElementById('pay-modal-subtitle').textContent = `Customer ID: ${activeCustomerId}`;
+
+        setTableLoading('pay-tbody', 8, 'text-blue-500');
+
+        document.getElementById('pay-total-paid').textContent = 'Loading…';
+
+        document.getElementById('pay-total-received').textContent = 'Loading…';
+
+        document.getElementById('pay-net-balance').textContent = 'Loading…';
+
+        document.getElementById('payments-modal').classList.remove('hidden');
+
+        try {
+
+            const res = await fetch(`/api/customer/${activeCustomerId}/payments`);
+
+            const data = await res.json();
+
+            if (data.error) {
+
+                setTableError('pay-tbody', 8, data.error);
+
+                return;
+
+            }
+
+            document.getElementById('pay-total-paid').textContent = fmt(data.total_paid);
+
+            document.getElementById('pay-total-received').textContent = fmt(data.total_received);
+
+            const netEl = document.getElementById('pay-net-balance');
+
+            netEl.textContent = fmtSigned(data.net_balance);
+
+            netEl.className = `text-xl font-bold ${
+                data.net_balance > 0 ? 'text-emerald-600'
+                : data.net_balance < 0 ? 'text-red-600'
+                : 'text-gray-600'
+            }`;
+
+            renderPaymentsTbody('pay-tbody', data.payments || []);
+
+        } catch (err) {
+
+            setTableError('pay-tbody', 8, 'Failed to load payments');
+
+        }
+
+    }
+
+    function renderPaymentsTbody(tbodyId, payments) {
+
+        const tbody = document.getElementById(tbodyId);
+
+        tbody.innerHTML = '';
+
+        if (!payments.length) {
+
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-400">No payments found</td></tr>`;
+
+            return;
+
+        }
+
+        payments.forEach((p, idx) => {
+
+            const isReceived = (p.type || '').trim().toLowerCase() === 'received';
+
+            const amtClass = isReceived ? 'text-emerald-600' : 'text-red-600';
+
+            const typeChip = isReceived
+
+                ? 'bg-emerald-100 text-emerald-700'
+
+                : 'bg-red-100 text-red-700';
+
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+
+                <td class="text-gray-400">${idx + 1}</td>
+
+                <td class="text-right font-semibold ${amtClass}">${fmt(p.amount)}</td>
+
+                <td><span class="px-2 py-0.5 rounded-full text-xs font-semibold ${typeChip}">${p.type || '-'}</span></td>
+
+                <td>${p.mode || '-'}</td>
+
+                <td>${p.bank_name || '-'}</td>
+
+                <td class="max-w-[140px] truncate">${p.reference || '-'}</td>
+
+                <td class="whitespace-nowrap">${p.payment_date || '-'}</td>
+
+                <td class="text-xs text-gray-400 whitespace-nowrap">${p.created_at || '-'}</td>`;
+
+            tbody.appendChild(tr);
+
+        });
+
+    }
+
+    // ══════════════════════════════════════════════════════
+    // PDF DOWNLOAD HELPERS (POPUP)
+    // ══════════════════════════════════════════════════════
+
+    function downloadRecordsPDF() {
+
+        if (!activeCustomerId) return;
+
+        window.open(`/bs/customer/${activeCustomerId}/records/pdf`, '_blank');
+
+    }
+
+    function downloadPaymentsPDF() {
+
+        if (!activeCustomerId) return;
+
+        window.open(`/bs/customer/${activeCustomerId}/payments/pdf`, '_blank');
+
+    }
+
+    function downloadLedgerPDF() {
+
+        if (!activeCustomerId) return;
+
+        window.open(`/bs/customer/${activeCustomerId}/ledger/pdf`, '_blank');
+
+    }
+
+    // ══════════════════════════════════════════════════════
+    // MODAL HELPERS
+    // ══════════════════════════════════════════════════════
+
+    function closeModal(modalId) {
+
+        document.getElementById(modalId).classList.add('hidden');
+
+        // Only re-enable scroll if both modals are closed
+
+        if (
+
+            document.getElementById('records-modal').classList.contains('hidden') &&
+
+            document.getElementById('payments-modal').classList.contains('hidden')
+
+        ) {
+
+            document.body.style.overflow = '';
+
+        }
+
+    }
+
+    function handleOverlayClick(event, modalId) {
+
+        if (event.target === document.getElementById(modalId)) {
+
+            closeModal(modalId);
+
+        }
+
+    }
+
+    // Close on Escape key
+
+    document.addEventListener('keydown', e => {
+
+        if (e.key === 'Escape') {
+
+            if (!document.getElementById('payments-modal').classList.contains('hidden')) {
+
+                closeModal('payments-modal');
+
+            } else if (!document.getElementById('records-modal').classList.contains('hidden')) {
+
+                closeModal('records-modal');
+
+            }
+
+        }
+
+    });
+
+    function setTableLoading(tbodyId, cols, colorClass = 'text-blue-500') {
+
+        document.getElementById(tbodyId).innerHTML =
+            `<tr><td colspan="${cols}" class="text-center py-10 ${colorClass}">Loading...</td></tr>`;
+
+    }
+
+    function setTableError(tbodyId, cols, msg) {
+
+        document.getElementById(tbodyId).innerHTML =
+            `<tr><td colspan="${cols}" class="text-center py-10 text-red-400">${msg}</td></tr>`;
+
+    }
+
+    // ══════════════════════════════════════════════════════
+    // THEME (unchanged from original)
+    // ══════════════════════════════════════════════════════
+
+    const THEMES = ['default', 'dark', 'warm'];
+
+    let themeIdx = 0;
+
+    function cycleTheme() {
+
+        const body = document.getElementById('body-root');
+
+        body.classList.remove('theme-dark', 'theme-warm');
+
+        themeIdx = (themeIdx + 1) % THEMES.length;
+
+        if (THEMES[themeIdx] !== 'default') body.classList.add(`theme-${THEMES[themeIdx]}`);
+
+        localStorage.setItem('bs_theme', THEMES[themeIdx]);
+
+    }
+
+    (function applyStoredTheme() {
+
+        const saved = localStorage.getItem('bs_theme') || 'default';
+
+        themeIdx = THEMES.indexOf(saved);
+
+        if (themeIdx < 0) themeIdx = 0;
+
+        const body = document.getElementById('body-root');
+
+        if (saved !== 'default') body.classList.add(`theme-${saved}`);
+
+    })();
+
+    // ══════════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════════
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const searchInput = document.getElementById('search-input');
+
+        const clearBtn = document.getElementById('clear-btn');
+
+        searchInput.addEventListener('input', () => {
+
+            const val = searchInput.value.trim();
+
+            clearBtn.classList.toggle('hidden', val.length === 0);
+
+            clearTimeout(window.searchDebounce);
+
+            if (!val) { loadSheet(1, ''); return; }
+
+            window.searchDebounce = setTimeout(() => loadSheet(1, val), 220);
+
+        });
+
+        loadSheet(1, '');
+
+    });
+
+</script>
+
+</body>
+
+</html>
