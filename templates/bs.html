@@ -446,11 +446,11 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
                     <div class="text-xs text-red-500 font-medium mb-1">Total To Pay</div>
-                    <div id="rec-total-pay" class="text-xl font-bold text-red-600">Rs. 0.00</div>
+                    <div id="rec-total-pay" class="text-xl font-bold text-red-600">Rs. 0</div>
                 </div>
                 <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
                     <div class="text-xs text-emerald-600 font-medium mb-1">Total To Receive</div>
-                    <div id="rec-total-receive" class="text-xl font-bold text-emerald-600">Rs. 0.00</div>
+                    <div id="rec-total-receive" class="text-xl font-bold text-emerald-600">Rs. 0</div>
                 </div>
             </div>
 
@@ -534,15 +534,15 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
                     <div class="text-xs text-red-500 font-medium mb-1">Total Paid</div>
-                    <div id="pay-total-paid" class="text-xl font-bold text-red-600">Rs. 0.00</div>
+                    <div id="pay-total-paid" class="text-xl font-bold text-red-600">Rs. 0</div>
                 </div>
                 <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
                     <div class="text-xs text-emerald-600 font-medium mb-1">Total Received</div>
-                    <div id="pay-total-received" class="text-xl font-bold text-emerald-600">Rs. 0.00</div>
+                    <div id="pay-total-received" class="text-xl font-bold text-emerald-600">Rs. 0</div>
                 </div>
                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4">
                     <div class="text-xs text-blue-600 font-medium mb-1">Net Balance</div>
-                    <div id="pay-net-balance" class="text-xl font-bold text-blue-600">Rs. 0.00</div>
+                    <div id="pay-net-balance" class="text-xl font-bold text-blue-600">Rs. 0</div>
                 </div>
             </div>
 
@@ -581,39 +581,19 @@
     let activeCustomerId = null;
     let activeCustomerName = '';
 
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const isOpen = !sidebar.classList.contains('-translate-x-full');
-
-        if (isOpen) {
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-            document.body.style.overflow = '';
-        } else {
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-    }
-
-    function closeSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
+    // --- NEW: Format as integer (no decimals) ---
     function fmt(value) {
-        const n = Number(value || 0);
-        return `Rs. ${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        let num = Number(value || 0);
+        // Round to nearest integer (already integer from backend if we changed to BIGINT, but safe)
+        num = Math.round(num);
+        return `Rs. ${num.toLocaleString('en-IN')}`;
     }
 
     function fmtSigned(value) {
-        const n = Number(value || 0);
-        if (n > 0) return `+ ${fmt(n)}`;
-        if (n < 0) return `- ${fmt(Math.abs(n))}`;
+        let num = Number(value || 0);
+        num = Math.round(num);
+        if (num > 0) return `+ ${fmt(num)}`;
+        if (num < 0) return `- ${fmt(Math.abs(num))}`;
         return fmt(0);
     }
 
