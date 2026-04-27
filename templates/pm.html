@@ -169,7 +169,6 @@
     </div>
 </nav>
 
-<!-- Mobile Sidebar -->
 <div id="sidebar" class="sidebar fixed top-0 left-0 h-screen w-[88vw] max-w-[340px] bg-white shadow-2xl -translate-x-full z-[60] transition-transform duration-300 md:hidden">
     <div class="p-5 pt-20">
         <div class="flex items-center justify-between mb-6">
@@ -307,8 +306,9 @@
 
                         <div>
                             <label class="block text-gray-700 font-medium mb-2">Amount (Rs.) <span class="text-red-500">*</span></label>
-                            <input type="number" id="amount" name="amount" step="0.01" required
+                            <input type="number" id="amount" name="amount" step="1" min="0" inputmode="numeric" required
                                    class="w-full px-5 py-4 border-2 rounded-2xl sm:rounded-3xl focus:outline-none focus:border-blue-500 text-base sm:text-lg">
+                            <p class="text-xs text-gray-400 mt-1">Whole rupees enter karein, e.g. 7600</p>
                         </div>
 
                         <div>
@@ -382,20 +382,19 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between gap-4 py-2 border-b border-gray-200">
                                 <div class="text-gray-500 text-sm font-medium">Total Paid</div>
-                                <div id="total-paid" class="text-xl sm:text-2xl font-bold text-red-600">Rs. 0.00</div>
+                                <div id="total-paid" class="text-xl sm:text-2xl font-bold text-red-600">Rs. 0</div>
                             </div>
                             <div class="flex items-center justify-between gap-4 py-2 border-b border-gray-200">
                                 <div class="text-gray-500 text-sm font-medium">Total Received</div>
-                                <div id="total-received" class="text-xl sm:text-2xl font-bold text-emerald-600">Rs. 0.00</div>
+                                <div id="total-received" class="text-xl sm:text-2xl font-bold text-emerald-600">Rs. 0</div>
                             </div>
                             <div class="flex items-center justify-between gap-4 py-2">
                                 <div class="text-gray-500 text-sm font-medium">Current Balance</div>
-                                <div id="current-balance" class="text-xl sm:text-2xl font-bold text-gray-900">Rs. 0.00</div>
+                                <div id="current-balance" class="text-xl sm:text-2xl font-bold text-gray-900">Rs. 0</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Desktop Table -->
                     <div id="table-scroll-body" class="hidden md:block border border-gray-100 rounded-2xl overflow-auto">
                         <table class="w-full min-w-[1200px]">
                             <thead class="bg-gray-50">
@@ -416,7 +415,6 @@
                         </table>
                     </div>
 
-                    <!-- Mobile Cards -->
                     <div id="payments-cards" class="md:hidden space-y-4"></div>
 
                     <div id="pagination" class="mt-6 flex flex-col items-center gap-4"></div>
@@ -517,12 +515,41 @@
             .replace(/\n/g, ' ');
     }
 
+    function safeNumber(value) {
+        const num = Number(String(value ?? '').replace(/,/g, '').trim());
+        return Number.isFinite(num) ? num : 0;
+    }
+
+    // Convert to integer (remove any fractional part)
+    function integerMoney(value) {
+        return Math.round(safeNumber(value));
+    }
+
     function formatMoney(value) {
-        const num = Number(value || 0);
-        return `Rs. ${num.toLocaleString('en-IN', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
+        const num = integerMoney(value);
+        return `Rs. ${num.toLocaleString('en-IN')}`;
+    }
+
+    function formatAmountInput(value) {
+        return integerMoney(value).toString();
+    }
+
+    function normalizeAmountBeforeSubmit() {
+        const amountEl = document.getElementById('amount');
+        const raw = String(amountEl.value ?? '').trim();
+
+        if (!raw) return true;
+
+        const num = Number(raw.replace(/,/g, ''));
+        if (!Number.isFinite(num)) {
+            alert('Please enter a valid amount');
+            amountEl.focus();
+            return false;
+        }
+
+        const normalized = Math.round(num);
+        amountEl.value = normalized.toString();
+        return true;
     }
 
     function getLocalDateString(dateObj) {
@@ -537,9 +564,9 @@
     }
 
     function updateSummary(data) {
-        const totalPaid = Number(data.total_paid || 0);
-        const totalReceived = Number(data.total_received || 0);
-        const currentBalance = Number(data.current_balance || (totalReceived - totalPaid));
+        const totalPaid = integerMoney(data.total_paid || 0);
+        const totalReceived = integerMoney(data.total_received || 0);
+        const currentBalance = integerMoney(data.current_balance || (totalReceived - totalPaid));
 
         document.getElementById('total-paid').textContent = formatMoney(totalPaid);
         document.getElementById('total-received').textContent = formatMoney(totalReceived);
@@ -590,7 +617,7 @@
         const tbody = document.getElementById('payments-tbody');
         const cards = document.getElementById('payments-cards');
 
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
+        tbody.innerHTML = `<table><td colspan="10" class="text-center py-12 text-blue-500">Loading...</td></tr>`;
         cards.innerHTML = `<div class="text-center py-10 text-blue-500">Loading...</div>`;
 
         try {
@@ -659,11 +686,13 @@
                 : 'bg-emerald-100 text-emerald-700';
 
             const serialNo = totalPayments - rowOffset - idx;
+            const amountValue = integerMoney(p.amount);
+            const formattedAmount = formatMoney(amountValue);
 
             row.innerHTML = `
                 <td class="px-6 py-4 text-gray-400 text-xs">${serialNo}</td>
                 <td class="px-6 py-4 font-medium">${p.customer_name || '-'}</td>
-                <td class="px-6 py-4 font-semibold ${amountClass}">${formatMoney(p.amount)}</td>
+                <td class="px-6 py-4 font-semibold ${amountClass}">${formattedAmount}</td>
                 <td class="px-6 py-4">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold ${typeChip}">
                         ${p.type || '-'}
@@ -677,7 +706,7 @@
                 <td class="px-6 py-4 text-center whitespace-nowrap">
                     <button onclick="editPayment(
                                 ${p.id}, ${p.customer_id},
-                                '${esc(p.customer_name)}', ${p.amount},
+                                '${esc(p.customer_name)}', '${amountValue}',
                                 '${esc(p.type)}', '${esc(p.mode || '')}',
                                 '${esc(p.bank_name || '')}', '${esc(p.reference || '')}',
                                 '${esc(p.payment_date || '')}')"
@@ -705,6 +734,9 @@
                 ? 'bg-red-100 text-red-700'
                 : 'bg-emerald-100 text-emerald-700';
 
+            const amountValue = integerMoney(p.amount);
+            const formattedAmount = formatMoney(amountValue);
+
             const card = document.createElement('div');
             card.className = 'mobile-card bg-gray-50 border border-gray-100 rounded-2xl p-4 shadow-sm';
             card.innerHTML = `
@@ -713,7 +745,7 @@
                         <div class="text-xs text-gray-400 font-medium">#${serialNo}</div>
                         <h3 class="text-lg font-semibold text-gray-900 break-words">${p.customer_name || '-'}</h3>
                         <div class="mt-2 text-sm text-gray-600 space-y-1">
-                            <div><span class="font-medium">Amount:</span> <span class="${amountClass} font-semibold">${formatMoney(p.amount)}</span></div>
+                            <div><span class="font-medium">Amount:</span> <span class="${amountClass} font-semibold">${formattedAmount}</span></div>
                             <div><span class="font-medium">Type:</span> <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${typeChip}">${p.type || '-'}</span></div>
                             <div><span class="font-medium">Mode:</span> ${p.mode || '-'}</div>
                             <div><span class="font-medium">Bank:</span> ${p.bank_name || '-'}</div>
@@ -727,7 +759,7 @@
                     <button
                         onclick="editPayment(
                             ${p.id}, ${p.customer_id},
-                            '${esc(p.customer_name)}', ${p.amount},
+                            '${esc(p.customer_name)}', '${amountValue}',
                             '${esc(p.type)}', '${esc(p.mode || '')}',
                             '${esc(p.bank_name || '')}', '${esc(p.reference || '')}',
                             '${esc(p.payment_date || '')}')"
@@ -802,7 +834,7 @@
         document.getElementById('edit_id').value = id;
         document.getElementById('customer_id').value = customerId;
         document.getElementById('customer_name').value = customerName;
-        document.getElementById('amount').value = amount;
+        document.getElementById('amount').value = formatAmountInput(amount);
         document.getElementById('type').value = type;
         document.getElementById('mode').value = mode || '';
         document.getElementById('bank_name').value = bankName || '';
@@ -1030,6 +1062,8 @@
         const searchInput = document.getElementById('search-input');
         const clearBtn = document.getElementById('clear-btn');
         const typeFilter = document.getElementById('type-filter');
+        const paymentForm = document.getElementById('payment-form');
+        const amountInput = document.getElementById('amount');
 
         document.getElementById('date').value = getLocalDateString(new Date());
 
@@ -1054,6 +1088,22 @@
         typeFilter.addEventListener('change', () => {
             currentTypeFilter = typeFilter.value || '';
             loadPayments(1, document.getElementById('search-input').value.trim());
+        });
+
+        amountInput.addEventListener('blur', () => {
+            const raw = amountInput.value.trim();
+            if (!raw) return;
+            const num = Number(raw.replace(/,/g, ''));
+            if (Number.isFinite(num)) {
+                amountInput.value = Math.round(num).toString();
+            }
+        });
+
+        paymentForm.addEventListener('submit', (e) => {
+            if (!normalizeAmountBeforeSubmit()) {
+                e.preventDefault();
+                return;
+            }
         });
 
         initCustomerAutocomplete();
